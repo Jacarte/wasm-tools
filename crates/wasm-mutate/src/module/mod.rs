@@ -1,7 +1,8 @@
+/// Implementations of mapping between wasmparser and wasm-encoder
 use std::convert::TryFrom;
 
 use wasm_encoder::{BlockType, Instruction, MemArg, ValType};
-use wasmparser::{Ieee32, Ieee64, MemoryImmediate, Operator, Type, TypeDef};
+use wasmparser::{Ieee32, Ieee64, LocalsReader, MemoryImmediate, Operator, Type, TypeDef};
 
 use crate::{error::EitherType, Error};
 
@@ -49,13 +50,13 @@ impl TryFrom<TypeDef<'_>> for TypeInfo {
                 params: ft
                     .params
                     .iter()
-                    .map(|&t| PrimitiveTypeInfo::try_from(t).unwrap())
-                    .collect(),
+                    .map(|&t| Ok(PrimitiveTypeInfo::try_from(t)?))
+                    .collect::<super::Result<Vec<PrimitiveTypeInfo>>>()?,
                 returns: ft
                     .returns
                     .iter()
-                    .map(|&t| PrimitiveTypeInfo::try_from(t).unwrap())
-                    .collect(),
+                    .map(|&t| Ok(PrimitiveTypeInfo::try_from(t)?))
+                    .collect::<super::Result<Vec<PrimitiveTypeInfo>>>()?,
             })),
             _ => Err(super::Error::UnsupportedType(EitherType::TypeDef(format!(
                 "{:?}",
@@ -73,4 +74,17 @@ pub fn map_type(tpe: Type) -> super::Result<ValType> {
         Type::F64 => Ok(ValType::F64),
         _ => Err(super::Error::UnsupportedType(EitherType::Type(tpe))),
     }
+}
+
+
+/// Returns the total number of locals and the mapping from wasmparser::Type and wasm_encoder::ValType
+pub fn map_locals(reader: &mut LocalsReader) -> (u32, super::Result<Vec<(u32, ValType)>>) {
+    let mut total_count = 0;
+    (total_count, (0..reader.get_count())
+            .map(|_| {
+                let (count, ty) = reader.read().unwrap();
+                total_count += count;
+                Ok((count, map_type(ty)?))
+            })
+            .collect::<super::Result<Vec<(u32, ValType)>>>())
 }
