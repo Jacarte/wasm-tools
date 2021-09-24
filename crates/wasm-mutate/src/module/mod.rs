@@ -76,15 +76,17 @@ pub fn map_type(tpe: Type) -> super::Result<ValType> {
     }
 }
 
-
 /// Returns the total number of locals and the mapping from wasmparser::Type and wasm_encoder::ValType
 pub fn map_locals(reader: &mut LocalsReader) -> (u32, super::Result<Vec<(u32, ValType)>>) {
     let mut total_count = 0;
-    (total_count, (0..reader.get_count())
+    (
+        total_count,
+        (0..reader.get_count())
             .map(|_| {
                 let (count, ty) = reader.read().unwrap();
                 total_count += count;
                 Ok((count, map_type(ty)?))
             })
-            .collect::<super::Result<Vec<(u32, ValType)>>>())
+            .collect::<super::Result<Vec<(u32, ValType)>>>(),
+    )
 }

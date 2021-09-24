@@ -8,12 +8,16 @@ use wasm_encoder::{CodeSection, Function, Module};
 use wasmparser::{BinaryReaderError, CodeSectionReader, FunctionBody, Operator};
 
 use crate::{
-    mutators::peephole::swap_commutative::SwapCommutativeOperator, ModuleInfo, Result, WasmMutate,
+    mutators::peephole::{
+        swap_commutative::SwapCommutativeOperator, unfold_constant::UnfoldConstant,
+    },
+    ModuleInfo, Result, WasmMutate,
 };
 
 use super::Mutator;
 
 pub mod swap_commutative;
+pub mod unfold_constant;
 
 pub struct PeepholeMutator;
 
@@ -90,7 +94,8 @@ impl Mutator for PeepholeMutator {
         rnd: &mut rand::prelude::SmallRng,
         info: &mut crate::ModuleInfo,
     ) -> Result<Module> {
-        let peepholes: Vec<Box<dyn CodeMutator>> = vec![Box::new(SwapCommutativeOperator)];
+        let peepholes: Vec<Box<dyn CodeMutator>> =
+            vec![Box::new(SwapCommutativeOperator), Box::new(UnfoldConstant)];
         let (new_function, function_to_mutate) =
             self.random_mutate(config, rnd, info, peepholes)?;
 
