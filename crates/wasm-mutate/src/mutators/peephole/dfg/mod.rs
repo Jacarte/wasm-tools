@@ -486,18 +486,20 @@ impl<'a> DFGBuilder {
                     // Augnment the color since the next operations could be inconsistent
                     color += 1;
                 }
-                Operator::I32Store { .. } | Operator::I64Store { .. } => {
+                Operator::I32Store { .. } | Operator::I64Store { .. }  => {
+                    let value = self.pop_operand(idx, false);
                     let offset = self.pop_operand(idx, false);
                     let idx = self.push_node(
-                        StackType::IndexAtCode(idx, 1),
+                        StackType::IndexAtCode(idx, 2),
                         idx,
-                        vec![offset],
+                        vec![offset, value],
                         color,
                         // Add type here
                         PrimitiveTypeInfo::Empty,
                     );
 
                     self.parents[offset] = idx as i32;
+                    self.parents[value] = idx as i32;
                     color += 1;
                 }
                 // All memory loads
