@@ -52,8 +52,6 @@ pub struct MiniDFG {
     // the ith instruction's parent instruction
     // We write each stack entry having no parent, i.e. a root in the dfg
     pub parents: Vec<i32>,
-    // Enodes for the egraph
-    pub nodes: Vec<Lang>,
 }
 
 impl MiniDFG {
@@ -1824,11 +1822,6 @@ impl<'a> DFGBuilder {
             entries: self.dfg_map.clone(),
             map: self.operatormap.clone(),
             parents: self.parents.clone(),
-            nodes: self
-                .dfg_map
-                .iter()
-                .map(|t| t.operator.clone())
-                .collect::<Vec<_>>(),
         })
     }
 }
