@@ -120,12 +120,12 @@ pub(crate) fn expr2wasm(
                             worklist.push(Context::new(*operand, TraversalEvent::Enter));
                         }
                     }
-                    Lang::F64Eq(operandss) |
-                    Lang::F64Ne(operandss) |
-                    Lang::F64Lt(operandss) |
-                    Lang::F64Gt(operandss) |
-                    Lang::F64Le(operandss) |
-                    Lang::F64Ge(operandss) |
+                    Lang::F64Eq(operands) |
+                    Lang::F64Ne(operands) |
+                    Lang::F64Lt(operands) |
+                    Lang::F64Gt(operands) |
+                    Lang::F64Le(operands) |
+                    Lang::F64Ge(operands) |
                     Lang::F64Copysign(operands) |
                     Lang::F64Max(operands) |
                     Lang::F64Min(operands) |

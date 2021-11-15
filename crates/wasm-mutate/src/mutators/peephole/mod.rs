@@ -671,6 +671,35 @@ mod tests {
         );
     }
 
+
+    #[test]
+    fn test_peep_float1() {
+        let rules: &[Rewrite<super::Lang, PeepholeMutationAnalysis>] = &[
+            rewrite!("rule";  "?x" => "0" if is_type("?x", PrimitiveTypeInfo::F32)),
+        ];
+
+        test_peephole_mutator(
+            r#"
+        (module
+            (func (export "exported_func") (result f32)
+                f32.const 100
+            )
+        )
+        "#,
+            rules,
+            r#"
+            (module
+                (type (;0;) (func (result f32) ))
+                (func (;0;) (type 0) (result f32)
+                    f32.const 0x0p+0 (;=0;)  
+                )
+              (export "exported_func" (func 0)))
+            "#,
+            0,
+        );
+    }
+
+
     #[test]
     fn test_peep_irelop1() {
         let rules: &[Rewrite<super::Lang, PeepholeMutationAnalysis>] =
