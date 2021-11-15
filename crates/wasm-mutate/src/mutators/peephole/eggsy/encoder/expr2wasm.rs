@@ -1,11 +1,10 @@
 use std::num::Wrapping;
 
-use crate::error::EitherType;
 use crate::info::ModuleInfo;
 use crate::module::PrimitiveTypeInfo;
-
 use crate::mutators::peephole::eggsy::encoder::TraversalEvent;
-use crate::mutators::peephole::{Lang, EG};
+use crate::mutators::peephole::*;
+use crate::{error::EitherType, mutators::peephole::EG};
 use egg::{Id, RecExpr};
 use rand::Rng;
 use wasm_encoder::{Function, Instruction, MemArg};
@@ -37,10 +36,10 @@ pub(crate) fn expr2wasm(
         }
     }
 
-    println!("{:?}", expr.as_ref());
-    let mut type_stack = vec![
-        egraph.analysis.get_returning_tpe(&nodes[usize::from(root)], expr.as_ref())?
-    ];
+    // println!("{:?}", expr.as_ref());
+    let mut type_stack = vec![egraph
+        .analysis
+        .get_returning_tpe(&nodes[usize::from(root)], expr.as_ref())?];
     let mut worklist = vec![
         Context::new(root, TraversalEvent::Exit),
         Context::new(root, TraversalEvent::Enter),
@@ -99,19 +98,19 @@ pub(crate) fn expr2wasm(
                             worklist.push(Context::new(*operand, TraversalEvent::Enter));
                         }
                     }
-                    Lang::F32Eq(operands) |
-                    Lang::F32Max(operands) |
-                    Lang::F32Min(operands) |
-                    Lang::F32Div(operands) |
-                    Lang::F32Mul(operands) |
-                    Lang::F32Sub(operands) |
-                    Lang::F32Copysign(operands) |
-                    Lang::F32Ne(operands) |
-                    Lang::F32Lt(operands) |
-                    Lang::F32Gt(operands) |
-                    Lang::F32Le(operands) |
-                    Lang::F32Ge(operands) |
-                    Lang::F32Add(operands) => {
+                    Lang::F32Eq(operands)
+                    | Lang::F32Max(operands)
+                    | Lang::F32Min(operands)
+                    | Lang::F32Div(operands)
+                    | Lang::F32Mul(operands)
+                    | Lang::F32Sub(operands)
+                    | Lang::F32Copysign(operands)
+                    | Lang::F32Ne(operands)
+                    | Lang::F32Lt(operands)
+                    | Lang::F32Gt(operands)
+                    | Lang::F32Le(operands)
+                    | Lang::F32Ge(operands)
+                    | Lang::F32Add(operands) => {
                         type_stack.push(PrimitiveTypeInfo::F32);
                         type_stack.push(PrimitiveTypeInfo::F32);
 
@@ -120,19 +119,19 @@ pub(crate) fn expr2wasm(
                             worklist.push(Context::new(*operand, TraversalEvent::Enter));
                         }
                     }
-                    Lang::F64Eq(operands) |
-                    Lang::F64Ne(operands) |
-                    Lang::F64Lt(operands) |
-                    Lang::F64Gt(operands) |
-                    Lang::F64Le(operands) |
-                    Lang::F64Ge(operands) |
-                    Lang::F64Copysign(operands) |
-                    Lang::F64Max(operands) |
-                    Lang::F64Min(operands) |
-                    Lang::F64Div(operands) |
-                    Lang::F64Mul(operands) |
-                    Lang::F64Sub(operands) |
-                    Lang::F64Add(operands) => {
+                    Lang::F64Eq(operands)
+                    | Lang::F64Ne(operands)
+                    | Lang::F64Lt(operands)
+                    | Lang::F64Gt(operands)
+                    | Lang::F64Le(operands)
+                    | Lang::F64Ge(operands)
+                    | Lang::F64Copysign(operands)
+                    | Lang::F64Max(operands)
+                    | Lang::F64Min(operands)
+                    | Lang::F64Div(operands)
+                    | Lang::F64Mul(operands)
+                    | Lang::F64Sub(operands)
+                    | Lang::F64Add(operands) => {
                         type_stack.push(PrimitiveTypeInfo::F64);
                         type_stack.push(PrimitiveTypeInfo::F64);
 
@@ -141,34 +140,34 @@ pub(crate) fn expr2wasm(
                             worklist.push(Context::new(*operand, TraversalEvent::Enter));
                         }
                     }
-                    Lang::F32Trunc(operands) |
-                    Lang::F32Floor(operands) |
-                    Lang::F32Ceil(operands) |
-                    Lang::F32Sqrt(operands) |
-                    Lang::F32Neg(operands) |
-                    Lang::F32Nearest(operands) |
-                    Lang::F32Abs(operands) => {
+                    Lang::F32Trunc(operands)
+                    | Lang::F32Floor(operands)
+                    | Lang::F32Ceil(operands)
+                    | Lang::F32Sqrt(operands)
+                    | Lang::F32Neg(operands)
+                    | Lang::F32Nearest(operands)
+                    | Lang::F32Abs(operands) => {
                         type_stack.push(PrimitiveTypeInfo::F32);
 
                         for operand in operands.iter().rev() {
                             worklist.push(Context::new(*operand, TraversalEvent::Exit));
                             worklist.push(Context::new(*operand, TraversalEvent::Enter));
                         }
-                    },
-                    Lang::F64Nearest(operands) |
-                    Lang::F64trunc(operands) |
-                    Lang::F64Floor(operands) |
-                    Lang::F64Ceil(operands) |
-                    Lang::F64Sqrt(operands) |
-                    Lang::F64Neg(operands) |
-                    Lang::F64Abs(operands)  => {
+                    }
+                    Lang::F64Nearest(operands)
+                    | Lang::F64trunc(operands)
+                    | Lang::F64Floor(operands)
+                    | Lang::F64Ceil(operands)
+                    | Lang::F64Sqrt(operands)
+                    | Lang::F64Neg(operands)
+                    | Lang::F64Abs(operands) => {
                         type_stack.push(PrimitiveTypeInfo::F64);
 
                         for operand in operands.iter().rev() {
                             worklist.push(Context::new(*operand, TraversalEvent::Exit));
                             worklist.push(Context::new(*operand, TraversalEvent::Enter));
                         }
-                    },
+                    }
                     Lang::I32Eq(operands)
                     | Lang::I32Ne(operands)
                     | Lang::I32LtS(operands)
@@ -250,6 +249,198 @@ pub(crate) fn expr2wasm(
                         worklist.push(Context::new(operands[0], TraversalEvent::Exit));
                         worklist.push(Context::new(operands[0], TraversalEvent::Enter));
                     }
+                    Lang::I32TruncF32S(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I32TruncF32U(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I32TruncF64S(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I32TruncF64U(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I64TruncF32S(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I64TruncF32U(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I64TruncF64S(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I64TruncF64U(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::F32ConvertI32S(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::F32ConvertI32U(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::F32ConvertI64S(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::F32ConvertI64U(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::F32DemoteF64(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::F64ConvertI32S(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::F64ConvertI32U(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::F64ConvertI64S(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::F64ConvertI64U(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::F64PromoteF32(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I32ReinterpretF32(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I64ReinterpretF64(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::F32ReinterpretI32(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::F64ReinterpretI64(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I32TruncSatF32S(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I32TruncSatF32U(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I32TruncSatF64S(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I32TruncSatF64U(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I64TruncSatF32S(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I64TruncSatF32U(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F32);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I64TruncSatF64S(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I64TruncSatF64U(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F64);
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+                    }
+                    Lang::I32Clz(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        for operand in operands.iter().rev() {
+                            // The type is one of the siblings
+                            worklist.push(Context::new(*operand, TraversalEvent::Exit));
+                            worklist.push(Context::new(*operand, TraversalEvent::Enter));
+                        }
+                    }
+                    Lang::I64Clz(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I64);
+                        for operand in operands.iter().rev() {
+                            // The type is one of the siblings
+                            worklist.push(Context::new(*operand, TraversalEvent::Exit));
+                            worklist.push(Context::new(*operand, TraversalEvent::Enter));
+                        }
+                    }
+                    Lang::I32Ctz(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I64);
+                        for operand in operands.iter().rev() {
+                            // The type is one of the siblings
+                            worklist.push(Context::new(*operand, TraversalEvent::Exit));
+                            worklist.push(Context::new(*operand, TraversalEvent::Enter));
+                        }
+                    }
+                    Lang::I64Ctz(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I64);
+                        for operand in operands.iter().rev() {
+                            // The type is one of the siblings
+                            worklist.push(Context::new(*operand, TraversalEvent::Exit));
+                            worklist.push(Context::new(*operand, TraversalEvent::Enter));
+                        }
+                    }
+                    Lang::Select(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        for operand in operands.iter().rev() {
+                            // The type is one of the siblings
+                            worklist.push(Context::new(*operand, TraversalEvent::Exit));
+                            worklist.push(Context::new(*operand, TraversalEvent::Enter));
+                        }
+                    }
                     Lang::LocalTee(operands) => {
                         // Skip operand 0 which is the symbol
                         let expectedvalue = &nodes[usize::from(operands[1])];
@@ -315,9 +506,22 @@ pub(crate) fn expr2wasm(
                             worklist.push(Context::new(*operand, TraversalEvent::Enter));
                         }
                     }
-                    Lang::I32Load(operands) | Lang::I64Load(operands) => {
+                    Lang::I32Load(operands)
+                    | Lang::I64Load(operands)
+                    | Lang::F32Load(operands)
+                    | Lang::F64Load(operands)
+                    | Lang::I32Load8S(operands)
+                    | Lang::I32Load8U(operands)
+                    | Lang::I32Load16S(operands)
+                    | Lang::I32Load16U(operands)
+                    | Lang::I64Load8S(operands)
+                    | Lang::I64Load8U(operands)
+                    | Lang::I64Load16S(operands)
+                    | Lang::I64Load16U(operands)
+                    | Lang::I64Load32S(operands)
+                    | Lang::I64Load32U(operands) => {
                         type_stack.push(PrimitiveTypeInfo::I32);
-                        // Only push the first argument, remaining are helpers
+                        // Only push the first argument, remaining are helpersÇ
                         worklist.push(Context::new(operands[0], TraversalEvent::Exit));
                         worklist.push(Context::new(operands[0], TraversalEvent::Enter));
                     }
@@ -331,6 +535,76 @@ pub(crate) fn expr2wasm(
                         worklist.push(Context::new(operands[1], TraversalEvent::Enter));
                     }
                     Lang::I64Store(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I64);
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        // Only push the first argument, remaining are helpers
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+
+                        worklist.push(Context::new(operands[1], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[1], TraversalEvent::Enter));
+                    }
+                    Lang::F32Store(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F32);
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        // Only push the first argument, remaining are helpers
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+
+                        worklist.push(Context::new(operands[1], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[1], TraversalEvent::Enter));
+                    }
+                    Lang::F64Store(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F64);
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        // Only push the first argument, remaining are helpers
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+
+                        worklist.push(Context::new(operands[1], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[1], TraversalEvent::Enter));
+                    }
+                    Lang::I32Store8(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        // Only push the first argument, remaining are helpers
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+
+                        worklist.push(Context::new(operands[1], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[1], TraversalEvent::Enter));
+                    }
+                    Lang::I32Store16(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        // Only push the first argument, remaining are helpers
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+
+                        worklist.push(Context::new(operands[1], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[1], TraversalEvent::Enter));
+                    }
+                    Lang::I64Store8(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I64);
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        // Only push the first argument, remaining are helpers
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+
+                        worklist.push(Context::new(operands[1], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[1], TraversalEvent::Enter));
+                    }
+                    Lang::I64Store16(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::I64);
+                        type_stack.push(PrimitiveTypeInfo::I32);
+                        // Only push the first argument, remaining are helpers
+                        worklist.push(Context::new(operands[0], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[0], TraversalEvent::Enter));
+
+                        worklist.push(Context::new(operands[1], TraversalEvent::Exit));
+                        worklist.push(Context::new(operands[1], TraversalEvent::Enter));
+                    }
+                    Lang::I64Store32(operands) => {
                         type_stack.push(PrimitiveTypeInfo::I64);
                         type_stack.push(PrimitiveTypeInfo::I32);
                         // Only push the first argument, remaining are helpers
@@ -524,7 +798,7 @@ pub(crate) fn expr2wasm(
                     }
                     Lang::F64(v) => {
                         newfunc.instruction(&Instruction::F64Const(f64::from_bits(*v)));
-                    },
+                    }
                     Lang::Arg(val) => {
                         let t = type_stack.pop().expect("Missing type information");
                         match t {
@@ -700,46 +974,126 @@ pub(crate) fn expr2wasm(
                         newfunc.instruction(&Instruction::I64Popcnt);
                     }
 
-                    Lang::F32Add(_) => { newfunc.instruction(&Instruction::F32Add); },
-                    Lang::F64Add(_) => { newfunc.instruction(&Instruction::F64Add); },
-                    Lang::F32Sub(_) => { newfunc.instruction(&Instruction::F32Sub); },
-                    Lang::F64Sub(_) => { newfunc.instruction(&Instruction::F64Sub); },
-                    Lang::F32Mul(_) => { newfunc.instruction(&Instruction::F32Mul); },
-                    Lang::F64Mul(_) => { newfunc.instruction(&Instruction::F64Mul); },
-                    Lang::F32Div(_) => { newfunc.instruction(&Instruction::F32Div); },
-                    Lang::F64Div(_) => { newfunc.instruction(&Instruction::F64Div); },
-                    Lang::F32Min(_) => { newfunc.instruction(&Instruction::F32Min); },
-                    Lang::F64Min(_) => { newfunc.instruction(&Instruction::F64Min); },
-                    Lang::F32Max(_) => { newfunc.instruction(&Instruction::F32Max); },
-                    Lang::F64Max(_) => { newfunc.instruction(&Instruction::F64Max); },
-                    Lang::F32Copysign(_) => { newfunc.instruction(&Instruction::F32Copysign); },
-                    Lang::F64Copysign(_) => { newfunc.instruction(&Instruction::F64Copysign); },
-                    Lang::F32Abs(_) => { newfunc.instruction(&Instruction::F32Abs); },
-                    Lang::F64Abs(_) => { newfunc.instruction(&Instruction::F64Abs); },
-                    Lang::F32Neg(_) => { newfunc.instruction(&Instruction::F32Neg); },
-                    Lang::F64Neg(_) => { newfunc.instruction(&Instruction::F64Neg); },
-                    Lang::F32Sqrt(_) => { newfunc.instruction(&Instruction::F32Sqrt); },
-                    Lang::F64Sqrt(_) => { newfunc.instruction(&Instruction::F64Sqrt); },
-                    Lang::F32Ceil(_) => { newfunc.instruction(&Instruction::F32Ceil); },
-                    Lang::F64Ceil(_) => { newfunc.instruction(&Instruction::F64Ceil); },
-                    Lang::F32Floor(_) => { newfunc.instruction(&Instruction::F32Floor); },
-                    Lang::F64Floor(_) => { newfunc.instruction(&Instruction::F64Floor); },
-                    Lang::F32Trunc(_) => { newfunc.instruction(&Instruction::F32Trunc); },
-                    Lang::F64trunc(_) => { newfunc.instruction(&Instruction::F64Trunc); },
-                    Lang::F32Nearest(_) => { newfunc.instruction(&Instruction::F32Nearest); },
-                    Lang::F64Nearest(_) => { newfunc.instruction(&Instruction::F64Nearest); },
-                    Lang::F32Eq(_) => { newfunc.instruction(&Instruction::F32Eq); },
-                    Lang::F64Eq(_) => { newfunc.instruction(&Instruction::F64Eq); },
-                    Lang::F32Ne(_) => { newfunc.instruction(&Instruction::F32Neq); },
-                    Lang::F64Ne(_) => { newfunc.instruction(&Instruction::F64Neq); },
-                    Lang::F32Lt(_) => { newfunc.instruction(&Instruction::F32Lt); },
-                    Lang::F64Lt(_) => { newfunc.instruction(&Instruction::F64Lt); },
-                    Lang::F32Gt(_) => { newfunc.instruction(&Instruction::F32Gt); },
-                    Lang::F64Gt(_) => { newfunc.instruction(&Instruction::F64Gt); },
-                    Lang::F32Le(_) => { newfunc.instruction(&Instruction::F32Le); },
-                    Lang::F64Le(_) => { newfunc.instruction(&Instruction::F64Le); },
-                    Lang::F32Ge(_) => { newfunc.instruction(&Instruction::F32Ge); },
-                    Lang::F64Ge(_) => { newfunc.instruction(&Instruction::F64Ge); },
+                    Lang::F32Add(_) => {
+                        newfunc.instruction(&Instruction::F32Add);
+                    }
+                    Lang::F64Add(_) => {
+                        newfunc.instruction(&Instruction::F64Add);
+                    }
+                    Lang::F32Sub(_) => {
+                        newfunc.instruction(&Instruction::F32Sub);
+                    }
+                    Lang::F64Sub(_) => {
+                        newfunc.instruction(&Instruction::F64Sub);
+                    }
+                    Lang::F32Mul(_) => {
+                        newfunc.instruction(&Instruction::F32Mul);
+                    }
+                    Lang::F64Mul(_) => {
+                        newfunc.instruction(&Instruction::F64Mul);
+                    }
+                    Lang::F32Div(_) => {
+                        newfunc.instruction(&Instruction::F32Div);
+                    }
+                    Lang::F64Div(_) => {
+                        newfunc.instruction(&Instruction::F64Div);
+                    }
+                    Lang::F32Min(_) => {
+                        newfunc.instruction(&Instruction::F32Min);
+                    }
+                    Lang::F64Min(_) => {
+                        newfunc.instruction(&Instruction::F64Min);
+                    }
+                    Lang::F32Max(_) => {
+                        newfunc.instruction(&Instruction::F32Max);
+                    }
+                    Lang::F64Max(_) => {
+                        newfunc.instruction(&Instruction::F64Max);
+                    }
+                    Lang::F32Copysign(_) => {
+                        newfunc.instruction(&Instruction::F32Copysign);
+                    }
+                    Lang::F64Copysign(_) => {
+                        newfunc.instruction(&Instruction::F64Copysign);
+                    }
+                    Lang::F32Abs(_) => {
+                        newfunc.instruction(&Instruction::F32Abs);
+                    }
+                    Lang::F64Abs(_) => {
+                        newfunc.instruction(&Instruction::F64Abs);
+                    }
+                    Lang::F32Neg(_) => {
+                        newfunc.instruction(&Instruction::F32Neg);
+                    }
+                    Lang::F64Neg(_) => {
+                        newfunc.instruction(&Instruction::F64Neg);
+                    }
+                    Lang::F32Sqrt(_) => {
+                        newfunc.instruction(&Instruction::F32Sqrt);
+                    }
+                    Lang::F64Sqrt(_) => {
+                        newfunc.instruction(&Instruction::F64Sqrt);
+                    }
+                    Lang::F32Ceil(_) => {
+                        newfunc.instruction(&Instruction::F32Ceil);
+                    }
+                    Lang::F64Ceil(_) => {
+                        newfunc.instruction(&Instruction::F64Ceil);
+                    }
+                    Lang::F32Floor(_) => {
+                        newfunc.instruction(&Instruction::F32Floor);
+                    }
+                    Lang::F64Floor(_) => {
+                        newfunc.instruction(&Instruction::F64Floor);
+                    }
+                    Lang::F32Trunc(_) => {
+                        newfunc.instruction(&Instruction::F32Trunc);
+                    }
+                    Lang::F64trunc(_) => {
+                        newfunc.instruction(&Instruction::F64Trunc);
+                    }
+                    Lang::F32Nearest(_) => {
+                        newfunc.instruction(&Instruction::F32Nearest);
+                    }
+                    Lang::F64Nearest(_) => {
+                        newfunc.instruction(&Instruction::F64Nearest);
+                    }
+                    Lang::F32Eq(_) => {
+                        newfunc.instruction(&Instruction::F32Eq);
+                    }
+                    Lang::F64Eq(_) => {
+                        newfunc.instruction(&Instruction::F64Eq);
+                    }
+                    Lang::F32Ne(_) => {
+                        newfunc.instruction(&Instruction::F32Neq);
+                    }
+                    Lang::F64Ne(_) => {
+                        newfunc.instruction(&Instruction::F64Neq);
+                    }
+                    Lang::F32Lt(_) => {
+                        newfunc.instruction(&Instruction::F32Lt);
+                    }
+                    Lang::F64Lt(_) => {
+                        newfunc.instruction(&Instruction::F64Lt);
+                    }
+                    Lang::F32Gt(_) => {
+                        newfunc.instruction(&Instruction::F32Gt);
+                    }
+                    Lang::F64Gt(_) => {
+                        newfunc.instruction(&Instruction::F64Gt);
+                    }
+                    Lang::F32Le(_) => {
+                        newfunc.instruction(&Instruction::F32Le);
+                    }
+                    Lang::F64Le(_) => {
+                        newfunc.instruction(&Instruction::F64Le);
+                    }
+                    Lang::F32Ge(_) => {
+                        newfunc.instruction(&Instruction::F32Ge);
+                    }
+                    Lang::F64Ge(_) => {
+                        newfunc.instruction(&Instruction::F64Ge);
+                    }
                     Lang::I32Extend8S(_) => {
                         newfunc.instruction(&Instruction::I32Extend8S);
                     }
@@ -761,6 +1115,111 @@ pub(crate) fn expr2wasm(
                     Lang::I64ExtendI32U(_) => {
                         newfunc.instruction(&Instruction::I64ExtendI32U);
                     }
+                    Lang::I32Clz(_) => {
+                        newfunc.instruction(&Instruction::I32Clz);
+                    }
+                    Lang::I64Clz(_) => {
+                        newfunc.instruction(&Instruction::I32Clz);
+                    }
+                    Lang::I32Ctz(_) => {
+                        newfunc.instruction(&Instruction::I32Ctz);
+                    }
+                    Lang::I64Ctz(_) => {
+                        newfunc.instruction(&Instruction::I64Ctz);
+                    }
+                    Lang::Select(_) => {
+                        newfunc.instruction(&Instruction::Select);
+                    }
+                    Lang::I32TruncF32S(_) => {
+                        newfunc.instruction(&Instruction::I32TruncF32S);
+                    }
+                    Lang::I32TruncF32U(_) => {
+                        newfunc.instruction(&Instruction::I32TruncF32U);
+                    }
+                    Lang::I32TruncF64S(_) => {
+                        newfunc.instruction(&Instruction::I32TruncF64S);
+                    }
+                    Lang::I64TruncF32S(_) => {
+                        newfunc.instruction(&Instruction::I64TruncF32S);
+                    }
+                    Lang::I64TruncF32U(_) => {
+                        newfunc.instruction(&Instruction::I64TruncF32U);
+                    }
+                    Lang::I64TruncF64S(_) => {
+                        newfunc.instruction(&Instruction::I64TruncF64S);
+                    }
+                    Lang::I64TruncF64U(_) => {
+                        newfunc.instruction(&Instruction::I64TruncF64U);
+                    }
+                    Lang::F32ConvertI32S(_) => {
+                        newfunc.instruction(&Instruction::F32ConvertI32S);
+                    }
+                    Lang::F32ConvertI32U(_) => {
+                        newfunc.instruction(&Instruction::F32ConvertI32U);
+                    }
+                    Lang::F32ConvertI64S(_) => {
+                        newfunc.instruction(&Instruction::F32ConvertI64S);
+                    }
+                    Lang::F32ConvertI64U(_) => {
+                        newfunc.instruction(&Instruction::F32ConvertI64U);
+                    }
+                    Lang::F32DemoteF64(_) => {
+                        newfunc.instruction(&Instruction::F32DemoteF64);
+                    }
+                    Lang::F64ConvertI32S(_) => {
+                        newfunc.instruction(&Instruction::F64ConvertI32S);
+                    }
+                    Lang::F64ConvertI32U(_) => {
+                        newfunc.instruction(&Instruction::F64ConvertI32U);
+                    }
+                    Lang::F64ConvertI64S(_) => {
+                        newfunc.instruction(&Instruction::F64ConvertI64S);
+                    }
+                    Lang::F64ConvertI64U(_) => {
+                        newfunc.instruction(&Instruction::F64ConvertI64U);
+                    }
+                    Lang::F64PromoteF32(_) => {
+                        newfunc.instruction(&Instruction::F64PromoteF32);
+                    }
+                    Lang::I32ReinterpretF32(_) => {
+                        newfunc.instruction(&Instruction::I32ReinterpretF32);
+                    }
+                    Lang::I64ReinterpretF64(_) => {
+                        newfunc.instruction(&Instruction::I64ReinterpretF64);
+                    }
+                    Lang::F32ReinterpretI32(_) => {
+                        newfunc.instruction(&Instruction::F32ReinterpretI32);
+                    }
+                    Lang::F64ReinterpretI64(_) => {
+                        newfunc.instruction(&Instruction::F64ReinterpretI64);
+                    }
+                    Lang::I32TruncSatF32S(_) => {
+                        newfunc.instruction(&Instruction::I32TruncSatF32S);
+                    }
+                    Lang::I32TruncSatF32U(_) => {
+                        newfunc.instruction(&Instruction::I32TruncSatF32U);
+                    }
+                    Lang::I32TruncSatF64S(_) => {
+                        newfunc.instruction(&Instruction::I32TruncSatF64S);
+                    }
+                    Lang::I32TruncSatF64U(_) => {
+                        newfunc.instruction(&Instruction::I32TruncSatF64U);
+                    }
+                    Lang::I64TruncSatF32S(_) => {
+                        newfunc.instruction(&Instruction::I64TruncSatF32S);
+                    }
+                    Lang::I64TruncSatF32U(_) => {
+                        newfunc.instruction(&Instruction::I64TruncSatF32U);
+                    }
+                    Lang::I64TruncSatF64S(_) => {
+                        newfunc.instruction(&Instruction::I64TruncSatF64S);
+                    }
+                    Lang::I64TruncSatF64U(_) => {
+                        newfunc.instruction(&Instruction::I64TruncSatF64U);
+                    }
+                    Lang::I32TruncF64U(_) => {
+                        newfunc.instruction(&Instruction::I32TruncF64U);
+                    }
                     Lang::Const(v) => match top.clone().expect("Missing info") {
                         PrimitiveTypeInfo::I32 => {
                             newfunc.instruction(&Instruction::I32Const(*v as i32));
@@ -770,7 +1229,7 @@ pub(crate) fn expr2wasm(
                         }
                         PrimitiveTypeInfo::F32 => {
                             newfunc.instruction(&Instruction::F32Const(f32::from_bits(*v as u32)));
-                        },
+                        }
                         PrimitiveTypeInfo::F64 => {
                             newfunc.instruction(&Instruction::F64Const(f64::from_bits(*v as u64)));
                         }
@@ -831,6 +1290,540 @@ pub(crate) fn expr2wasm(
                         };
 
                         newfunc.instruction(&Instruction::I64Store(memarg));
+                    }
+                    Lang::MemoryGrow(_) => todo!(),
+                    Lang::MemorySize(_) => todo!(),
+                    Lang::F32Load(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[1])];
+                        let align_operand = &nodes[usize::from(operands[2])];
+                        let memidx_operand = &nodes[usize::from(operands[3])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::F32Load(memarg));
+                    }
+                    Lang::F64Load(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[1])];
+                        let align_operand = &nodes[usize::from(operands[2])];
+                        let memidx_operand = &nodes[usize::from(operands[3])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::F64Load(memarg));
+                    }
+                    Lang::I32Load8S(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[1])];
+                        let align_operand = &nodes[usize::from(operands[2])];
+                        let memidx_operand = &nodes[usize::from(operands[3])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I32Load8_U(memarg));
+                    }
+                    Lang::I32Load8U(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[1])];
+                        let align_operand = &nodes[usize::from(operands[2])];
+                        let memidx_operand = &nodes[usize::from(operands[3])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I32Load8_U(memarg));
+                    }
+                    Lang::I32Load16S(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[1])];
+                        let align_operand = &nodes[usize::from(operands[2])];
+                        let memidx_operand = &nodes[usize::from(operands[3])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I32Load16_S(memarg));
+                    }
+                    Lang::I32Load16U(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[1])];
+                        let align_operand = &nodes[usize::from(operands[2])];
+                        let memidx_operand = &nodes[usize::from(operands[3])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I32Load16_U(memarg));
+                    }
+                    Lang::I64Load8S(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[1])];
+                        let align_operand = &nodes[usize::from(operands[2])];
+                        let memidx_operand = &nodes[usize::from(operands[3])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I64Load8_S(memarg));
+                    }
+                    Lang::I64Load8U(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[1])];
+                        let align_operand = &nodes[usize::from(operands[2])];
+                        let memidx_operand = &nodes[usize::from(operands[3])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I64Load8_U(memarg));
+                    }
+                    Lang::I64Load16S(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[1])];
+                        let align_operand = &nodes[usize::from(operands[2])];
+                        let memidx_operand = &nodes[usize::from(operands[3])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I64Load16_S(memarg));
+                    }
+                    Lang::I64Load16U(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[1])];
+                        let align_operand = &nodes[usize::from(operands[2])];
+                        let memidx_operand = &nodes[usize::from(operands[3])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I64Load16_U(memarg));
+                    }
+                    Lang::I64Load32S(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[1])];
+                        let align_operand = &nodes[usize::from(operands[2])];
+                        let memidx_operand = &nodes[usize::from(operands[3])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I64Load32_S(memarg));
+                    }
+                    Lang::I64Load32U(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[1])];
+                        let align_operand = &nodes[usize::from(operands[2])];
+                        let memidx_operand = &nodes[usize::from(operands[3])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I64Load32_U(memarg));
+                    }
+                    Lang::F32Store(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[2])];
+                        let align_operand = &nodes[usize::from(operands[3])];
+                        let memidx_operand = &nodes[usize::from(operands[4])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::F32Store(memarg));
+                    }
+                    Lang::F64Store(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[2])];
+                        let align_operand = &nodes[usize::from(operands[3])];
+                        let memidx_operand = &nodes[usize::from(operands[4])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::F64Store(memarg));
+                    }
+                    Lang::I32Store8(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[2])];
+                        let align_operand = &nodes[usize::from(operands[3])];
+                        let memidx_operand = &nodes[usize::from(operands[4])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I32Store8(memarg));
+                    }
+                    Lang::I32Store16(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[2])];
+                        let align_operand = &nodes[usize::from(operands[3])];
+                        let memidx_operand = &nodes[usize::from(operands[4])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I32Store16(memarg));
+                    }
+                    Lang::I64Store8(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[2])];
+                        let align_operand = &nodes[usize::from(operands[3])];
+                        let memidx_operand = &nodes[usize::from(operands[4])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I64Store8(memarg));
+                    }
+                    Lang::I64Store16(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[2])];
+                        let align_operand = &nodes[usize::from(operands[3])];
+                        let memidx_operand = &nodes[usize::from(operands[4])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I64Store16(memarg));
+                    }
+                    Lang::I64Store32(operands) => {
+                        let offset_operand = &nodes[usize::from(operands[2])];
+                        let align_operand = &nodes[usize::from(operands[3])];
+                        let memidx_operand = &nodes[usize::from(operands[4])];
+
+                        let toarg = |op: &Lang| match op {
+                            Lang::Arg(val) => *val as u64,
+                            Lang::Const(val) => *val as u64,
+                            _ => unreachable!(
+                                "This operand should be an Arg node. Current operand {:?}",
+                                op
+                            ),
+                        };
+
+                        let offset_value = toarg(offset_operand);
+
+                        let align_value = toarg(align_operand);
+
+                        let memidx_value = toarg(memidx_operand);
+
+                        let memarg = MemArg {
+                            offset: offset_value, // These can be mutated as well
+                            align: align_value as u32,
+                            memory_index: memidx_value as u32,
+                        };
+
+                        newfunc.instruction(&Instruction::I64Store32(memarg));
                     }
                 }
             }

@@ -7,8 +7,6 @@ pub mod analysis;
 pub mod encoder;
 pub mod lang;
 
-use crate::mutators::peephole::eggsy::lang::Lang;
-
 use self::analysis::ClassData;
 /// This struct is a wrapper of egg::Extractor
 /// The majority of the methods are copied and adapted to our needs

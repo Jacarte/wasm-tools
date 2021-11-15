@@ -1,9 +1,7 @@
 use std::cell::RefCell;
 
-use crate::{
-    module::{PrimitiveTypeInfo, TypeInfo},
-    mutators::peephole::eggsy::Lang,
-};
+use crate::module::{PrimitiveTypeInfo, TypeInfo};
+use crate::mutators::peephole::eggsy::lang::*;
 use egg::{Analysis, EGraph, Id};
 
 /// Analysis implementation for our defined language
@@ -145,7 +143,7 @@ impl PeepholeMutationAnalysis {
             Lang::UnfoldI64(_) => Ok(PrimitiveTypeInfo::I64),
             Lang::I32(_) => Ok(PrimitiveTypeInfo::I32),
             Lang::I64(_) => Ok(PrimitiveTypeInfo::I64),
-            Lang::Arg(_) => Ok(PrimitiveTypeInfo::I32), 
+            Lang::Arg(_) => Ok(PrimitiveTypeInfo::I32),
             // This is the default type for Const nodes
             Lang::Const(_) => Ok(PrimitiveTypeInfo::I64),
             Lang::I32Extend8S(_) => Ok(PrimitiveTypeInfo::I32),
@@ -215,6 +213,65 @@ impl PeepholeMutationAnalysis {
             Lang::F64Le(_) => Ok(PrimitiveTypeInfo::I32),
             Lang::F32Ge(_) => Ok(PrimitiveTypeInfo::I32),
             Lang::F64Ge(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I32Clz(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I64Clz(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::I32Ctz(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I64Ctz(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::Select(_) => {
+                // select t1.x t2.y t2.z -> t2
+                todo!();
+            }
+            Lang::I32TruncF32S(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I32TruncF32U(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I32TruncF64S(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I64TruncF32S(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I64TruncF32U(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::I64TruncF64S(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::I64TruncF64U(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::F32ConvertI32S(_) => Ok(PrimitiveTypeInfo::F32),
+            Lang::F32ConvertI32U(_) => Ok(PrimitiveTypeInfo::F32),
+            Lang::F32ConvertI64S(_) => Ok(PrimitiveTypeInfo::F32),
+            Lang::F32ConvertI64U(_) => Ok(PrimitiveTypeInfo::F32),
+            Lang::F32DemoteF64(_) => Ok(PrimitiveTypeInfo::F32),
+            Lang::F64ConvertI32S(_) => Ok(PrimitiveTypeInfo::F64),
+            Lang::F64ConvertI32U(_) => Ok(PrimitiveTypeInfo::F64),
+            Lang::F64ConvertI64S(_) => Ok(PrimitiveTypeInfo::F64),
+            Lang::F64ConvertI64U(_) => Ok(PrimitiveTypeInfo::F64),
+            Lang::F64PromoteF32(_) => Ok(PrimitiveTypeInfo::F64),
+            Lang::I32ReinterpretF32(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I64ReinterpretF64(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::F32ReinterpretI32(_) => Ok(PrimitiveTypeInfo::F32),
+            Lang::F64ReinterpretI64(_) => Ok(PrimitiveTypeInfo::F64),
+            Lang::I32TruncSatF32S(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I32TruncSatF32U(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I32TruncSatF64S(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I32TruncSatF64U(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I64TruncSatF32S(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::I64TruncSatF32U(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::I64TruncSatF64S(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::I64TruncSatF64U(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::F32Load(_) => Ok(PrimitiveTypeInfo::F32),
+            Lang::F64Load(_) => Ok(PrimitiveTypeInfo::F64),
+            Lang::I32Load8S(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I32Load8U(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I32Load16S(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I32Load16U(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I64Load8S(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::I64Load8U(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::I64Load16S(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::I64Load16U(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::I64Load32S(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::I64Load32U(_) => Ok(PrimitiveTypeInfo::I64),
+            Lang::F32Store(_) => Ok(PrimitiveTypeInfo::Empty),
+            Lang::F64Store(_) => Ok(PrimitiveTypeInfo::Empty),
+            Lang::I32Store8(_) => Ok(PrimitiveTypeInfo::Empty),
+            Lang::I32Store16(_) => Ok(PrimitiveTypeInfo::Empty),
+            Lang::I64Store8(_) => Ok(PrimitiveTypeInfo::Empty),
+            Lang::I64Store16(_) => Ok(PrimitiveTypeInfo::Empty),
+            Lang::I64Store32(_) => Ok(PrimitiveTypeInfo::Empty),
+            Lang::MemorySize(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::MemoryGrow(_) => Ok(PrimitiveTypeInfo::Empty),
+            Lang::I32TruncF64U(_) => Ok(PrimitiveTypeInfo::I32),
         }
     }
 

@@ -7,6 +7,9 @@
 //! tool. `wasm-mutate` can serve as a custom mutator for mutation-based
 //! fuzzing.
 
+// The following will prevent the recursion limit error for
+// 'egg::define_language' macro
+#![recursion_limit = "256"]
 #![cfg_attr(not(feature = "structopt"), deny(missing_docs))]
 
 mod error;

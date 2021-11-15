@@ -2,7 +2,7 @@
 
 use crate::mutators::peephole::dfg::MiniDFG;
 use crate::mutators::peephole::eggsy::encoder::expr2wasm::expr2wasm;
-use crate::mutators::peephole::{Lang, EG};
+use crate::mutators::peephole::*;
 use crate::{
     mutators::peephole::{
         dfg::{BBlock, StackEntry},

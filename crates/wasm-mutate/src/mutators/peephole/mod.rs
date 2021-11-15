@@ -4,7 +4,7 @@ use crate::module::PrimitiveTypeInfo;
 use crate::mutators::peephole::eggsy::analysis::PeepholeMutationAnalysis;
 use crate::mutators::peephole::eggsy::encoder::rebuild::build_expr;
 use crate::mutators::peephole::eggsy::encoder::Encoder;
-use crate::mutators::peephole::eggsy::lang::Lang;
+use crate::mutators::peephole::eggsy::lang::*;
 use egg::{rewrite, AstSize, Id, Rewrite, Runner, Subst};
 use rand::{prelude::SmallRng, Rng};
 use std::convert::TryFrom;
@@ -324,6 +324,10 @@ impl Mutator for PeepholeMutator {
             rewrite!("mem-load-shift2";  "(i64load ?x ?y ?z ?w)" => "(i64load (i32add ?x ?y) 0 ?z ?w)"),
             rewrite!("mem-store-shift1";  "(i32store ?x ?y ?z ?u ?t)" => "(i32store ?x (i32add ?y ?z) 0 ?u ?t)"),
             rewrite!("mem-store-shift2";  "(i64store ?x ?y ?z ?u ?t)" => "(i64store ?x (i32add ?y ?z) 0 ?u ?t)"),
+            rewrite!("mem-load-shift3";  "(f32load ?x ?y ?z ?w)" => "(f32load (i32add ?x ?y) 0 ?z ?w)"),
+            rewrite!("mem-load-shift23";  "(f64load ?x ?y ?z ?w)" => "(f64load (i32add ?x ?y) 0 ?z ?w)"),
+            rewrite!("mem-store-shift14";  "(f32store ?x ?y ?z ?u ?t)" => "(f32store ?x (i32add ?y ?z) 0 ?u ?t)"),
+            rewrite!("mem-store-shift24";  "(f64store ?x ?y ?z ?u ?t)" => "(f64store ?x (i32add ?y ?z) 0 ?u ?t)"),
             // The following rules will be useful for reducing feature
 
             // Remove the add before the offset (useful for shrinking)
@@ -331,6 +335,10 @@ impl Mutator for PeepholeMutator {
             rewrite!("mem-load-shift-reverse2";  "(i64load (i32add ?x ?y) 0 ?z ?w)" => "(i64load ?x ?y ?z ?w)" if self.is_const("?y")),
             rewrite!("mem-store-shift-reverse";  "(i32store ?t (i32add ?x ?y) 0 ?z ?w)" => "(i32store ?t ?x ?y ?z ?w)" if self.is_const("?y")),
             rewrite!("mem-store-shift-reverse2";  "(i64store ?t (i32add ?x ?y) 0 ?z ?w)" => "(i64store ?t ?x ?y ?z ?w)" if self.is_const("?y")),
+            rewrite!("mem-load-shift-reverse3";  "(f32load (i32add ?x ?y) 0 ?z ?w)" => "(f32load ?x ?y ?z ?w)" if self.is_const("?y")),
+            rewrite!("mem-load-shift-reverse23";  "(f64load (i32add ?x ?y) 0 ?z ?w)" => "(f64load ?x ?y ?z ?w)" if self.is_const("?y")),
+            rewrite!("mem-store-shift-reverse4";  "(f32store ?t (i32add ?x ?y) 0 ?z ?w)" => "(f32store ?t ?x ?y ?z ?w)" if self.is_const("?y")),
+            rewrite!("mem-store-shift-reverse25";  "(f64store ?t (i32add ?x ?y) 0 ?z ?w)" => "(f64store ?t ?x ?y ?z ?w)" if self.is_const("?y")),
             // Rmove the full subtree of the drop
             rewrite!("drop1";  "(drop ?x)" => "(drop i32rand)" if self.is_type("?x", PrimitiveTypeInfo::I32)),
             rewrite!("drop2";  "(drop ?x)" => "(drop i64rand)" if self.is_type("?x", PrimitiveTypeInfo::I64)),
@@ -363,6 +371,12 @@ impl Mutator for PeepholeMutator {
 
         rules.extend(rewrite!("commutative-2";  "(i32mul ?x ?y)" <=> "(i32mul ?y ?x)" ));
         rules.extend(rewrite!("commutative-22";  "(i64mul ?x ?y)" <=> "(i64mul ?y ?x)" ));
+
+        rules.extend(rewrite!("commutative-13";  "(f32add ?x ?y)" <=> "(f32add ?y ?x)"));
+        rules.extend(rewrite!("commutative-14";  "(f64add ?x ?y)" <=> "(f64add ?y ?x)"));
+
+        rules.extend(rewrite!("commutative-23";  "(f32mul ?x ?y)" <=> "(f32mul ?y ?x)" ));
+        rules.extend(rewrite!("commutative-24";  "(f64mul ?x ?y)" <=> "(f64mul ?y ?x)" ));
 
         rules
             .extend(rewrite!("associative-2";  "(i32mul ?x (i32mul ?y ?z))" <=> "(i32mul (i32mul ?x ?y) ?z)" ));
@@ -520,11 +534,13 @@ mod tests {
         mutators::{peephole::PeepholeMutator, Mutator},
         WasmMutate,
     };
+    use arbitrary::Unstructured;
     use egg::{rewrite, Id, Rewrite, Subst};
-    use rand::{rngs::SmallRng, SeedableRng};
+    use rand::{rngs::SmallRng, RngCore, SeedableRng};
+    use wasm_smith::SwarmConfig;
 
     use super::{PeepholeMutationAnalysis, EG};
-    use crate::mutators::peephole::Lang;
+    use crate::mutators::peephole::*;
 
     /// Condition to apply the unfold operator
     /// check that the var is a constant
@@ -593,6 +609,66 @@ mod tests {
                 (export "exported_func" (func 0)))
             "#,
             0,
+        );
+    }
+
+    #[test]
+    fn test_peep_ext1() {
+        let rules: &[Rewrite<super::Lang, PeepholeMutationAnalysis>] =
+            &[rewrite!("rule";  "(i32ctz ?x)" => "(i32clz ?x)")];
+
+        test_peephole_mutator(
+            r#"
+                (module
+                    (func (export "exported_func")  (local i32 i32)
+                        i32.const 100
+                        i32.ctz
+                        drop
+                    )
+                )
+        "#,
+            rules,
+            r#"
+            (module
+                (type (;0;) (func))
+                (func (;0;) (type 0)
+                  (local i32 i32)
+                  i32.const 100
+                  i32.clz
+                  drop)
+                (export "exported_func" (func 0)))
+            "#,
+            4,
+        );
+    }
+
+    #[test]
+    fn test_peep_ext2() {
+        let rules: &[Rewrite<super::Lang, PeepholeMutationAnalysis>] =
+            &[rewrite!("rule";  "(f32converti32s ?x)" => "(f32converti32u ?x)")];
+
+        test_peephole_mutator(
+            r#"
+                (module
+                    (func (export "exported_func")  (local i32 i32)
+                        i32.const 100
+                        f32.convert_i32_s
+                        drop
+                    )
+                )
+        "#,
+            rules,
+            r#"
+            (module
+                (type (;0;) (func))
+                (func (;0;) (type 0)
+                  (local i32 i32)
+                  i32.const 100
+                  f32.convert_i32_u
+                  drop)
+                (export "exported_func" (func 0)))
+            "#,
+            4,
         );
     }
 
@@ -671,12 +747,10 @@ mod tests {
         );
     }
 
-
     #[test]
     fn test_peep_float1() {
-        let rules: &[Rewrite<super::Lang, PeepholeMutationAnalysis>] = &[
-            rewrite!("rule";  "(f32add ?x ?y)" => "(f32add ?y ?x)"),
-        ];
+        let rules: &[Rewrite<super::Lang, PeepholeMutationAnalysis>] =
+            &[rewrite!("rule";  "(f32add ?x ?y)" => "(f32add ?y ?x)")];
 
         test_peephole_mutator(
             r#"
@@ -702,7 +776,6 @@ mod tests {
             2,
         );
     }
-
 
     #[test]
     fn test_peep_irelop1() {
@@ -1426,6 +1499,70 @@ mod tests {
     }
 
     #[test]
+    fn test_peep_mem_popout3() {
+        let rules: &[Rewrite<super::Lang, PeepholeMutationAnalysis>] = &[
+            rewrite!("mem-load-shift";  "(f32load ?x ?y ?z ?w)" => "(f32load (i32add ?x ?y) 0 ?z ?w)"),
+        ];
+
+        test_peephole_mutator(
+            r#"
+        (module
+            (memory 1)
+            (func (export "exported_func") (param i32) (result f32)
+                i32.const 42
+                f32.load offset=100
+            )
+        )
+        "#,
+            rules,
+            r#"
+            (module
+                (type (;0;) (func (param i32) (result f32)))
+                (func (;0;) (type 0) (param i32) (result f32)
+                  i32.const 42
+                  i32.const 100
+                  i32.add
+                  f32.load)
+                (memory (;0;) 1)
+                (export "exported_func" (func 0)))
+        "#,
+            1,
+        );
+    }
+
+    #[test]
+    fn test_peep_mem_popout4() {
+        let rules: &[Rewrite<super::Lang, PeepholeMutationAnalysis>] = &[
+            rewrite!("mem-load-shift";  "(f64load ?x ?y ?z ?w)" => "(f64load (i32add ?x ?y) 0 ?z ?w)"),
+        ];
+
+        test_peephole_mutator(
+            r#"
+        (module
+            (memory 1)
+            (func (export "exported_func") (param i32) (result f64)
+                i32.const 42
+                f64.load offset=100
+            )
+        )
+        "#,
+            rules,
+            r#"
+            (module
+                (type (;0;) (func (param i32) (result f64)))
+                (func (;0;) (type 0) (param i32) (result f64)
+                  i32.const 42
+                  i32.const 100
+                  i32.add
+                  f64.load
+                )
+                (memory (;0;) 1)
+                (export "exported_func" (func 0)))
+        "#,
+            1,
+        );
+    }
+    #[test]
     fn test_peep_globals1() {
         let rules: &[Rewrite<super::Lang, PeepholeMutationAnalysis>] = &[
             rewrite!("mem-load-shift";  "?x" => "(i32add ?x 0)" if is_type("?x", PrimitiveTypeInfo::I32)),
@@ -1518,7 +1655,7 @@ mod tests {
         let mutated_bytes = &mutated.finish();
         let text = wasmprinter::print_bytes(mutated_bytes).unwrap();
         crate::validate(&mut validator, mutated_bytes);
-
+        println!("{}", text);
         let expected_bytes = &wat::parse_str(expected).unwrap();
         let expectedtext = wasmprinter::print_bytes(expected_bytes).unwrap();
         assert_eq!(expectedtext, text);
