@@ -37,7 +37,10 @@ pub(crate) fn expr2wasm(
         }
     }
 
-    let mut type_stack = vec![PrimitiveTypeInfo::Empty];
+    println!("{:?}", expr.as_ref());
+    let mut type_stack = vec![
+        egraph.analysis.get_returning_tpe(&nodes[usize::from(root)], expr.as_ref())?
+    ];
     let mut worklist = vec![
         Context::new(root, TraversalEvent::Exit),
         Context::new(root, TraversalEvent::Enter),
@@ -96,6 +99,76 @@ pub(crate) fn expr2wasm(
                             worklist.push(Context::new(*operand, TraversalEvent::Enter));
                         }
                     }
+                    Lang::F32Eq(operands) |
+                    Lang::F32Max(operands) |
+                    Lang::F32Min(operands) |
+                    Lang::F32Div(operands) |
+                    Lang::F32Mul(operands) |
+                    Lang::F32Sub(operands) |
+                    Lang::F32Copysign(operands) |
+                    Lang::F32Ne(operands) |
+                    Lang::F32Lt(operands) |
+                    Lang::F32Gt(operands) |
+                    Lang::F32Le(operands) |
+                    Lang::F32Ge(operands) |
+                    Lang::F32Add(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F32);
+                        type_stack.push(PrimitiveTypeInfo::F32);
+
+                        for operand in operands.iter().rev() {
+                            worklist.push(Context::new(*operand, TraversalEvent::Exit));
+                            worklist.push(Context::new(*operand, TraversalEvent::Enter));
+                        }
+                    }
+                    Lang::F64Eq(operandss) |
+                    Lang::F64Ne(operandss) |
+                    Lang::F64Lt(operandss) |
+                    Lang::F64Gt(operandss) |
+                    Lang::F64Le(operandss) |
+                    Lang::F64Ge(operandss) |
+                    Lang::F64Copysign(operands) |
+                    Lang::F64Max(operands) |
+                    Lang::F64Min(operands) |
+                    Lang::F64Div(operands) |
+                    Lang::F64Mul(operands) |
+                    Lang::F64Sub(operands) |
+                    Lang::F64Add(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F64);
+                        type_stack.push(PrimitiveTypeInfo::F64);
+
+                        for operand in operands.iter().rev() {
+                            worklist.push(Context::new(*operand, TraversalEvent::Exit));
+                            worklist.push(Context::new(*operand, TraversalEvent::Enter));
+                        }
+                    }
+                    Lang::F32Trunc(operands) |
+                    Lang::F32Floor(operands) |
+                    Lang::F32Ceil(operands) |
+                    Lang::F32Sqrt(operands) |
+                    Lang::F32Neg(operands) |
+                    Lang::F32Nearest(operands) |
+                    Lang::F32Abs(operands) => {
+                        type_stack.push(PrimitiveTypeInfo::F32);
+
+                        for operand in operands.iter().rev() {
+                            worklist.push(Context::new(*operand, TraversalEvent::Exit));
+                            worklist.push(Context::new(*operand, TraversalEvent::Enter));
+                        }
+                    },
+                    Lang::F64Nearest(operands) |
+                    Lang::F64trunc(operands) |
+                    Lang::F64Floor(operands) |
+                    Lang::F64Ceil(operands) |
+                    Lang::F64Sqrt(operands) |
+                    Lang::F64Neg(operands) |
+                    Lang::F64Abs(operands)  => {
+                        type_stack.push(PrimitiveTypeInfo::F64);
+
+                        for operand in operands.iter().rev() {
+                            worklist.push(Context::new(*operand, TraversalEvent::Exit));
+                            worklist.push(Context::new(*operand, TraversalEvent::Enter));
+                        }
+                    },
                     Lang::I32Eq(operands)
                     | Lang::I32Ne(operands)
                     | Lang::I32LtS(operands)
@@ -446,6 +519,12 @@ pub(crate) fn expr2wasm(
                     Lang::I64(v) => {
                         newfunc.instruction(&Instruction::I64Const(*v));
                     }
+                    Lang::F32(v) => {
+                        newfunc.instruction(&Instruction::F32Const(f32::from_bits(*v)));
+                    }
+                    Lang::F64(v) => {
+                        newfunc.instruction(&Instruction::F64Const(f64::from_bits(*v)));
+                    },
                     Lang::Arg(val) => {
                         let t = type_stack.pop().expect("Missing type information");
                         match t {
@@ -620,6 +699,47 @@ pub(crate) fn expr2wasm(
                     Lang::I64Popcnt(_) => {
                         newfunc.instruction(&Instruction::I64Popcnt);
                     }
+
+                    Lang::F32Add(_) => { newfunc.instruction(&Instruction::F32Add); },
+                    Lang::F64Add(_) => { newfunc.instruction(&Instruction::F64Add); },
+                    Lang::F32Sub(_) => { newfunc.instruction(&Instruction::F32Sub); },
+                    Lang::F64Sub(_) => { newfunc.instruction(&Instruction::F64Sub); },
+                    Lang::F32Mul(_) => { newfunc.instruction(&Instruction::F32Mul); },
+                    Lang::F64Mul(_) => { newfunc.instruction(&Instruction::F64Mul); },
+                    Lang::F32Div(_) => { newfunc.instruction(&Instruction::F32Div); },
+                    Lang::F64Div(_) => { newfunc.instruction(&Instruction::F64Div); },
+                    Lang::F32Min(_) => { newfunc.instruction(&Instruction::F32Min); },
+                    Lang::F64Min(_) => { newfunc.instruction(&Instruction::F64Min); },
+                    Lang::F32Max(_) => { newfunc.instruction(&Instruction::F32Max); },
+                    Lang::F64Max(_) => { newfunc.instruction(&Instruction::F64Max); },
+                    Lang::F32Copysign(_) => { newfunc.instruction(&Instruction::F32Copysign); },
+                    Lang::F64Copysign(_) => { newfunc.instruction(&Instruction::F64Copysign); },
+                    Lang::F32Abs(_) => { newfunc.instruction(&Instruction::F32Abs); },
+                    Lang::F64Abs(_) => { newfunc.instruction(&Instruction::F64Abs); },
+                    Lang::F32Neg(_) => { newfunc.instruction(&Instruction::F32Neg); },
+                    Lang::F64Neg(_) => { newfunc.instruction(&Instruction::F64Neg); },
+                    Lang::F32Sqrt(_) => { newfunc.instruction(&Instruction::F32Sqrt); },
+                    Lang::F64Sqrt(_) => { newfunc.instruction(&Instruction::F64Sqrt); },
+                    Lang::F32Ceil(_) => { newfunc.instruction(&Instruction::F32Ceil); },
+                    Lang::F64Ceil(_) => { newfunc.instruction(&Instruction::F64Ceil); },
+                    Lang::F32Floor(_) => { newfunc.instruction(&Instruction::F32Floor); },
+                    Lang::F64Floor(_) => { newfunc.instruction(&Instruction::F64Floor); },
+                    Lang::F32Trunc(_) => { newfunc.instruction(&Instruction::F32Trunc); },
+                    Lang::F64trunc(_) => { newfunc.instruction(&Instruction::F64Trunc); },
+                    Lang::F32Nearest(_) => { newfunc.instruction(&Instruction::F32Nearest); },
+                    Lang::F64Nearest(_) => { newfunc.instruction(&Instruction::F64Nearest); },
+                    Lang::F32Eq(_) => { newfunc.instruction(&Instruction::F32Eq); },
+                    Lang::F64Eq(_) => { newfunc.instruction(&Instruction::F64Eq); },
+                    Lang::F32Ne(_) => { newfunc.instruction(&Instruction::F32Neq); },
+                    Lang::F64Ne(_) => { newfunc.instruction(&Instruction::F64Neq); },
+                    Lang::F32Lt(_) => { newfunc.instruction(&Instruction::F32Lt); },
+                    Lang::F64Lt(_) => { newfunc.instruction(&Instruction::F64Lt); },
+                    Lang::F32Gt(_) => { newfunc.instruction(&Instruction::F32Gt); },
+                    Lang::F64Gt(_) => { newfunc.instruction(&Instruction::F64Gt); },
+                    Lang::F32Le(_) => { newfunc.instruction(&Instruction::F32Le); },
+                    Lang::F64Le(_) => { newfunc.instruction(&Instruction::F64Le); },
+                    Lang::F32Ge(_) => { newfunc.instruction(&Instruction::F32Ge); },
+                    Lang::F64Ge(_) => { newfunc.instruction(&Instruction::F64Ge); },
                     Lang::I32Extend8S(_) => {
                         newfunc.instruction(&Instruction::I32Extend8S);
                     }
@@ -641,14 +761,20 @@ pub(crate) fn expr2wasm(
                     Lang::I64ExtendI32U(_) => {
                         newfunc.instruction(&Instruction::I64ExtendI32U);
                     }
-                    Lang::Const(v) => match top.expect("Missing info") {
+                    Lang::Const(v) => match top.clone().expect("Missing info") {
                         PrimitiveTypeInfo::I32 => {
                             newfunc.instruction(&Instruction::I32Const(*v as i32));
                         }
                         PrimitiveTypeInfo::I64 => {
                             newfunc.instruction(&Instruction::I64Const(*v));
                         }
-                        _ => unreachable!("Invalid type"),
+                        PrimitiveTypeInfo::F32 => {
+                            newfunc.instruction(&Instruction::F32Const(f32::from_bits(*v as u32)));
+                        },
+                        PrimitiveTypeInfo::F64 => {
+                            newfunc.instruction(&Instruction::F64Const(f64::from_bits(*v as u64)));
+                        }
+                        _ => unreachable!("Invalid type {:?}", top),
                     },
                     Lang::I32Store(operands) => {
                         let offset_operand = &nodes[usize::from(operands[2])];
