@@ -390,15 +390,19 @@ impl Mutator for PeepholeMutator {
 
         rules.extend(rewrite!("idempotent-3";  "?x" <=> "(i32mul ?x 1)" if self.is_type("?x", PrimitiveTypeInfo::I32)));
         rules.extend(rewrite!("idempotent-31";  "?x" <=> "(i64mul ?x 1)" if self.is_type("?x", PrimitiveTypeInfo::I64)));
+        rules.extend(rewrite!("idempotent-4";  "?x" <=> "(f32mul ?x 1)" if self.is_type("?x", PrimitiveTypeInfo::F32)));
+        rules.extend(rewrite!("idempotent-41";  "?x" <=> "(f64mul ?x 1)" if self.is_type("?x", PrimitiveTypeInfo::F64)));
 
-        rules.extend(rewrite!("idempotent-4";  "?x" <=> "(i32add ?x 0)" if self.is_type("?x", PrimitiveTypeInfo::I32)));
-        rules.extend(rewrite!("idempotent-41";  "?x" <=> "(i64add ?x 0)" if self.is_type("?x", PrimitiveTypeInfo::I64)));
+        rules.extend(rewrite!("idempotent-44";  "?x" <=> "(i32add ?x 0)" if self.is_type("?x", PrimitiveTypeInfo::I32)));
+        rules.extend(rewrite!("idempotent-441";  "?x" <=> "(i64add ?x 0)" if self.is_type("?x", PrimitiveTypeInfo::I64)));
+        rules.extend(rewrite!("idempotent-5";  "?x" <=> "(f32add ?x 0)" if self.is_type("?x", PrimitiveTypeInfo::F32)));
+        rules.extend(rewrite!("idempotent-51";  "?x" <=> "(f64add ?x 0)" if self.is_type("?x", PrimitiveTypeInfo::F64)));
 
-        rules.extend(rewrite!("idempotent-5";  "?x" <=> "(i32xor ?x 0)" if self.is_type("?x", PrimitiveTypeInfo::I32)));
-        rules.extend(rewrite!("idempotent-51";  "?x" <=> "(i64xor ?x 0)" if self.is_type("?x", PrimitiveTypeInfo::I64)));
+        rules.extend(rewrite!("idempotent-6";  "?x" <=> "(i32xor ?x 0)" if self.is_type("?x", PrimitiveTypeInfo::I32)));
+        rules.extend(rewrite!("idempotent-61";  "?x" <=> "(i64xor ?x 0)" if self.is_type("?x", PrimitiveTypeInfo::I64)));
 
-        rules.extend(rewrite!("idempotent-6"; "(i32eqz ?x)" <=> "(i32eq ?x 0)" if self.is_type("?x", PrimitiveTypeInfo::I32)));
-        rules.extend(rewrite!("idempotent-61"; "(i64eqz ?x)" <=> "(i64eq ?x 0)" if self.is_type("?x", PrimitiveTypeInfo::I64)));
+        rules.extend(rewrite!("idempotent-7"; "(i32eqz ?x)" <=> "(i32eq ?x 0)" if self.is_type("?x", PrimitiveTypeInfo::I32)));
+        rules.extend(rewrite!("idempotent-71"; "(i64eqz ?x)" <=> "(i64eq ?x 0)" if self.is_type("?x", PrimitiveTypeInfo::I64)));
 
         rules.extend(rewrite!("commutative-3"; "(i32eq ?x ?y)" <=> "(i32eq ?y ?x)" if self.is_type("?x", PrimitiveTypeInfo::I32)));
         rules.extend(rewrite!("commutative-31"; "(i64eq ?x ?y)" <=> "(i64eq ?y ?x)" if self.is_type("?x", PrimitiveTypeInfo::I64)));
@@ -534,10 +538,8 @@ mod tests {
         mutators::{peephole::PeepholeMutator, Mutator},
         WasmMutate,
     };
-    use arbitrary::Unstructured;
     use egg::{rewrite, Id, Rewrite, Subst};
-    use rand::{rngs::SmallRng, RngCore, SeedableRng};
-    use wasm_smith::SwarmConfig;
+    use rand::{rngs::SmallRng, SeedableRng};
 
     use super::{PeepholeMutationAnalysis, EG};
     use crate::mutators::peephole::*;

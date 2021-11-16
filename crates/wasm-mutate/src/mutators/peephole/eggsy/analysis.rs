@@ -224,7 +224,7 @@ impl PeepholeMutationAnalysis {
             Lang::I32TruncF32S(_) => Ok(PrimitiveTypeInfo::I32),
             Lang::I32TruncF32U(_) => Ok(PrimitiveTypeInfo::I32),
             Lang::I32TruncF64S(_) => Ok(PrimitiveTypeInfo::I32),
-            Lang::I64TruncF32S(_) => Ok(PrimitiveTypeInfo::I32),
+            Lang::I64TruncF32S(_) => Ok(PrimitiveTypeInfo::I64),
             Lang::I64TruncF32U(_) => Ok(PrimitiveTypeInfo::I64),
             Lang::I64TruncF64S(_) => Ok(PrimitiveTypeInfo::I64),
             Lang::I64TruncF64U(_) => Ok(PrimitiveTypeInfo::I64),
@@ -306,14 +306,16 @@ impl Analysis<Lang> for PeepholeMutationAnalysis {
     fn make(egraph: &EGraph<Lang, Self>, l: &Lang) -> Self::Data {
         // We build the nodes collection in the same order the egraph is built
         egraph.analysis.nodes.borrow_mut().push(l.clone());
+        let tpe = egraph
+            .analysis
+            .get_returning_tpe(l, &egraph.analysis.nodes.borrow())
+            .expect("Missing type");
+        log::debug!("tpe {:?} for {:?}", tpe, l);
         Some(ClassData {
             // This type information is used only when the rewriting rules are being applied ot the egraph
             // Thats why we need the original expression in the analysis beforehand :)
             // Beyond that the random extracted expression needs to be pass to the `get_returning_tpe` method
-            tpe: egraph
-                .analysis
-                .get_returning_tpe(l, &egraph.analysis.nodes.borrow())
-                .expect("Missing type"),
+            tpe,
         })
     }
 

@@ -1119,7 +1119,7 @@ pub(crate) fn expr2wasm(
                         newfunc.instruction(&Instruction::I32Clz);
                     }
                     Lang::I64Clz(_) => {
-                        newfunc.instruction(&Instruction::I32Clz);
+                        newfunc.instruction(&Instruction::I64Clz);
                     }
                     Lang::I32Ctz(_) => {
                         newfunc.instruction(&Instruction::I32Ctz);

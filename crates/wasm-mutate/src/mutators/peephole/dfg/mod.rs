@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use egg::{Id, RecExpr};
-use log::warn;
+
 use wasmparser::{Operator, Range};
 
 use crate::mutators::peephole::*;
@@ -2509,7 +2509,7 @@ impl<'a> DFGBuilder {
                     self.parents[rightidx] = idx as i32;
                 }
 
-                Operator::Select => todo!(),
+                Operator::Select => return None,
                 Operator::F32Load { memarg } => {
                     let offset = self.pop_operand(idx, false);
 
@@ -3479,8 +3479,14 @@ impl<'a> DFGBuilder {
                     color += 1;
                 }
 
-                Operator::MemorySize { mem, mem_byte } => todo!(),
-                Operator::MemoryGrow { mem, mem_byte } => todo!(),
+                Operator::MemorySize {
+                    mem: _,
+                    mem_byte: _,
+                } => return None,
+                Operator::MemoryGrow {
+                    mem: _,
+                    mem_byte: _,
+                } => return None,
 
                 Operator::I32Clz => {
                     let arg = self.pop_operand(idx, false);
@@ -3958,7 +3964,7 @@ impl std::fmt::Display for MiniDFG {
 mod tests {
     use super::DFGBuilder;
     use crate::mutators::OperatorAndByteOffset;
-    use crate::{module::PrimitiveTypeInfo, ModuleInfo};
+    use crate::ModuleInfo;
     use wasmparser::Parser;
 
     #[test]
