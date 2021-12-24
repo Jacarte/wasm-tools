@@ -254,7 +254,7 @@ impl PeepholeMutator {
                 let iterator = iterator
                     .filter(move |expr| !expr.to_string().eq(&startcmp.to_string()))
                     .map(move |expr| {
-                        log::trace!("Yielding expression:\n{}", expr.pretty(60));
+                        // log::debug!("Yielding expression:\n{}", expr.pretty(60));
 
                         let mut newfunc = self.copy_locals(reader)?;
                         let needed_resources = Encoder::build_function(

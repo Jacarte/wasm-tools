@@ -170,6 +170,10 @@ pub struct WasmMutate<'wasm> {
     #[cfg_attr(feature = "structopt", structopt(long))]
     reduce: bool,
 
+    /// Only perform size-expand transformations on the Wasm module.
+    #[cfg_attr(feature = "structopt", structopt(long))]
+    expand: bool,
+
     // Note: this is only exposed via the programmatic interface, not via the
     // CLI.
     #[cfg_attr(feature = "structopt", structopt(skip = None))]
@@ -187,8 +191,9 @@ impl Default for WasmMutate<'_> {
         let seed = 3;
         WasmMutate {
             seed,
-            preserve_semantics: false,
+            preserve_semantics: true,
             reduce: false,
+            expand: true,
             raw_mutate_func: None,
             fuel: Cell::new(u64::MAX),
             rng: None,
@@ -211,6 +216,12 @@ impl<'wasm> WasmMutate<'wasm> {
     /// transformations on the Wasm module.
     pub fn preserve_semantics(&mut self, preserve_semantics: bool) -> &mut Self {
         self.preserve_semantics = preserve_semantics;
+        self
+    }
+
+    /// TODO
+    pub fn expand(&mut self, expand: bool) -> &mut Self {
+        self.expand = expand;
         self
     }
 
@@ -272,7 +283,7 @@ impl<'wasm> WasmMutate<'wasm> {
         define_mutators!(
             self,
             (
-                PeepholeMutator::new(2),
+                PeepholeMutator::new(20),
                 RemoveExportMutator,
                 RenameExportMutator { max_name_size: 100 },
                 SnipMutator,

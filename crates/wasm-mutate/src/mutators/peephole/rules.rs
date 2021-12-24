@@ -52,143 +52,268 @@ impl PeepholeMutator {
                 rewrite!("i64.shr_s-by-0"; "(i64.shr_s ?x 0_i64)" => "?x"),
             ]);
         } else {
-            rules.extend(vec![
-                rewrite!("i32.or--1"; "(i32.or ?x -1_i32)" => "-1_i32"),
-                rewrite!("i64.or--1"; "(i64.or ?x -1_i64)" => "-1_i64"),
-            ]);
+            if !config.expand {
+                rules.extend(vec![
+                    rewrite!("i32.or--1"; "(i32.or ?x -1_i32)" => "-1_i32"),
+                    rewrite!("i64.or--1"; "(i64.or ?x -1_i64)" => "-1_i64"),
+                ]);
 
-            rules.extend(rewrite!(
-                "i32.or-x-x";
-                "(i32.or ?x ?x)" <=> "?x"
-                    if self.is_type("?x", PrimitiveTypeInfo::I32)
-            ));
-            rules.extend(rewrite!(
-                "i64.or-x-x";
-                "(i64.or ?x ?x)" <=> "?x"
-                    if self.is_type("?x", PrimitiveTypeInfo::I64)
-            ));
+                rules.extend(rewrite!(
+                    "i32.or-x-x";
+                    "(i32.or ?x ?x)" <=> "?x"
+                        if self.is_type("?x", PrimitiveTypeInfo::I32)
+                ));
+                rules.extend(rewrite!(
+                    "i64.or-x-x";
+                    "(i64.or ?x ?x)" <=> "?x"
+                        if self.is_type("?x", PrimitiveTypeInfo::I64)
+                ));
 
-            rules.extend(rewrite!(
-                "i32.and-x-x";
-                "(i32.and ?x ?x)" <=> "?x"
-                    if self.is_type("?x", PrimitiveTypeInfo::I32)
-            ));
-            rules.extend(rewrite!(
-                "i64.and-x-x";
-                "(i64.and ?x ?x)" <=> "?x"
-                    if self.is_type("?x", PrimitiveTypeInfo::I64)
-            ));
+                rules.extend(rewrite!(
+                    "i32.and-x-x";
+                    "(i32.and ?x ?x)" <=> "?x"
+                        if self.is_type("?x", PrimitiveTypeInfo::I32)
+                ));
+                rules.extend(rewrite!(
+                    "i64.and-x-x";
+                    "(i64.and ?x ?x)" <=> "?x"
+                        if self.is_type("?x", PrimitiveTypeInfo::I64)
+                ));
 
-            rules.push(rewrite!("select-same-branches"; "(select ?x ?y ?y)" => "?y"));
+                rules.push(rewrite!("select-same-branches"; "(select ?x ?y ?y)" => "?y"));
 
-            rules.extend(rewrite!(
-                "i32.sub-0";
-                "(i32.sub ?x 0_i32)" <=> "?x"
-                    if self.is_type("?x", PrimitiveTypeInfo::I32)
-            ));
-            rules.extend(rewrite!(
-                "i64.sub-0";
-                "(i64.sub ?x 0_i64)" <=> "?x"
-                    if self.is_type("?x", PrimitiveTypeInfo::I64)
-            ));
+                rules.extend(rewrite!(
+                    "i32.sub-0";
+                    "(i32.sub ?x 0_i32)" <=> "?x"
+                        if self.is_type("?x", PrimitiveTypeInfo::I32)
+                ));
+                rules.extend(rewrite!(
+                    "i64.sub-0";
+                    "(i64.sub ?x 0_i64)" <=> "?x"
+                        if self.is_type("?x", PrimitiveTypeInfo::I64)
+                ));
 
-            rules.extend(rewrite!(
-                "i32.mul-x-1";
-                "?x" <=> "(i32.mul ?x 1_i32)"
-                    if self.is_type("?x", PrimitiveTypeInfo::I32)
-            ));
-            rules.extend(rewrite!(
-                "i64.mul-x-1";
-                "?x" <=> "(i64.mul ?x 1_i64)"
-                    if self.is_type("?x", PrimitiveTypeInfo::I64)
-            ));
+                rules.extend(rewrite!(
+                    "i32.mul-x-1";
+                    "?x" <=> "(i32.mul ?x 1_i32)"
+                        if self.is_type("?x", PrimitiveTypeInfo::I32)
+                ));
+                rules.extend(rewrite!(
+                    "i64.mul-x-1";
+                    "?x" <=> "(i64.mul ?x 1_i64)"
+                        if self.is_type("?x", PrimitiveTypeInfo::I64)
+                ));
 
-            rules.extend(rewrite!(
-                "f32.mul-x-1";
-                "?x" <=> "(f32.mul ?x 1_f32)"
-                    if self.is_type("?x", PrimitiveTypeInfo::F32)
-            ));
-            rules.extend(rewrite!(
-                "f64.mul-x-1";
-                "?x" <=> "(f64.mul ?x 1_f64)"
-                    if self.is_type("?x", PrimitiveTypeInfo::F64)
-            ));
+                rules.extend(rewrite!(
+                    "f32.mul-x-1";
+                    "?x" <=> "(f32.mul ?x 1_f32)"
+                        if self.is_type("?x", PrimitiveTypeInfo::F32)
+                ));
+                rules.extend(rewrite!(
+                    "f64.mul-x-1";
+                    "?x" <=> "(f64.mul ?x 1_f64)"
+                        if self.is_type("?x", PrimitiveTypeInfo::F64)
+                ));
 
-            rules.extend(rewrite!(
-                "i32.add-x-0";
-                "?x" <=> "(i32.add ?x 0_i32)"
-                    if self.is_type("?x", PrimitiveTypeInfo::I32)
-            ));
-            rules.extend(rewrite!(
-                "i64.add-x-0";
-                "?x" <=> "(i64.add ?x 0_i64)"
-                    if self.is_type("?x", PrimitiveTypeInfo::I64)
-            ));
-            rules.extend(rewrite!(
-                "f32-add-x-0";
-                "?x" <=> "(f32.add ?x 0_f32)"
-                    if self.is_type("?x", PrimitiveTypeInfo::F32)
-            ));
-            rules.extend(rewrite!(
-                "f64.add-x-0";
-                "?x" <=> "(f64.add ?x 0_f64)"
-                    if self.is_type("?x", PrimitiveTypeInfo::F64)
-            ));
+                rules.extend(rewrite!(
+                    "i32.add-x-0";
+                    "?x" <=> "(i32.add ?x 0_i32)"
+                        if self.is_type("?x", PrimitiveTypeInfo::I32)
+                ));
+                rules.extend(rewrite!(
+                    "i64.add-x-0";
+                    "?x" <=> "(i64.add ?x 0_i64)"
+                        if self.is_type("?x", PrimitiveTypeInfo::I64)
+                ));
+                rules.extend(rewrite!(
+                    "f32-add-x-0";
+                    "?x" <=> "(f32.add ?x 0_f32)"
+                        if self.is_type("?x", PrimitiveTypeInfo::F32)
+                ));
+                rules.extend(rewrite!(
+                    "f64.add-x-0";
+                    "?x" <=> "(f64.add ?x 0_f64)"
+                        if self.is_type("?x", PrimitiveTypeInfo::F64)
+                ));
 
-            rules.extend(rewrite!(
-                "i32.xor-x-0";
-                "?x" <=> "(i32.xor ?x 0_i32)"
-                    if self.is_type("?x", PrimitiveTypeInfo::I32)
-            ));
-            rules.extend(rewrite!(
-                "i64.xor-x-0";
-                "?x" <=> "(i64.xor ?x 0_i64)"
-                    if self.is_type("?x", PrimitiveTypeInfo::I64)
-            ));
+                rules.extend(rewrite!(
+                    "i32.xor-x-0";
+                    "?x" <=> "(i32.xor ?x 0_i32)"
+                        if self.is_type("?x", PrimitiveTypeInfo::I32)
+                ));
+                rules.extend(rewrite!(
+                    "i64.xor-x-0";
+                    "?x" <=> "(i64.xor ?x 0_i64)"
+                        if self.is_type("?x", PrimitiveTypeInfo::I64)
+                ));
 
-            rules.extend(rewrite!(
-                "i32.eq-x-0";
-                "(i32.eq ?x 0_i32)" <=> "(i32.eqz ?x)"
-                    if self.is_type("?x", PrimitiveTypeInfo::I32)
-            ));
-            rules.extend(rewrite!(
-                "i64.eq-x-0";
-                "(i64.eq ?x 0_i64)" <=> "(i64.eqz ?x)"
-                    if self.is_type("?x", PrimitiveTypeInfo::I64)
-            ));
+                rules.extend(rewrite!(
+                    "i32.eq-x-0";
+                    "(i32.eq ?x 0_i32)" <=> "(i32.eqz ?x)"
+                        if self.is_type("?x", PrimitiveTypeInfo::I32)
+                ));
+                rules.extend(rewrite!(
+                    "i64.eq-x-0";
+                    "(i64.eq ?x 0_i64)" <=> "(i64.eqz ?x)"
+                        if self.is_type("?x", PrimitiveTypeInfo::I64)
+                ));
 
-            rules.extend(rewrite!(
-                "i32.shl-by-0";
-                "(i32.shl ?x 0_i32)" <=> "?x"
-                    if self.is_type("?x", PrimitiveTypeInfo::I32)
-            ));
-            rules.extend(rewrite!(
-                "i64.shl-by-0";
-                "(i64.shl ?x 0_i64)" <=> "?x"
-                    if self.is_type("?x", PrimitiveTypeInfo::I64)
-            ));
+                rules.extend(rewrite!(
+                    "i32.shl-by-0";
+                    "(i32.shl ?x 0_i32)" <=> "?x"
+                        if self.is_type("?x", PrimitiveTypeInfo::I32)
+                ));
+                rules.extend(rewrite!(
+                    "i64.shl-by-0";
+                    "(i64.shl ?x 0_i64)" <=> "?x"
+                        if self.is_type("?x", PrimitiveTypeInfo::I64)
+                ));
 
-            rules.extend(rewrite!(
-                "i32.shr_u-by-0";
-                "(i32.shr_u ?x 0_i32)" <=> "?x"
-                    if self.is_type("?x", PrimitiveTypeInfo::I32)
-            ));
-            rules.extend(rewrite!(
-                "i64.shr_u-by-0";
-                "(i64.shr_u ?x 0_i64)" <=> "?x"
-                    if self.is_type("?x", PrimitiveTypeInfo::I64)
-            ));
+                rules.extend(rewrite!(
+                    "i32.shr_u-by-0";
+                    "(i32.shr_u ?x 0_i32)" <=> "?x"
+                        if self.is_type("?x", PrimitiveTypeInfo::I32)
+                ));
+                rules.extend(rewrite!(
+                    "i64.shr_u-by-0";
+                    "(i64.shr_u ?x 0_i64)" <=> "?x"
+                        if self.is_type("?x", PrimitiveTypeInfo::I64)
+                ));
 
-            rules.extend(rewrite!(
-                "i32.shr_s-by-0";
-                "(i32.shr_s ?x 0_i32)" <=> "?x"
-                    if self.is_type("?x", PrimitiveTypeInfo::I32)
-            ));
-            rules.extend(rewrite!(
-                "i64.shr_s-by-0";
-                "(i64.shr_s ?x 0_i64)" <=> "?x"
-                    if self.is_type("?x", PrimitiveTypeInfo::I64)
-            ));
+                rules.extend(rewrite!(
+                    "i32.shr_s-by-0";
+                    "(i32.shr_s ?x 0_i32)" <=> "?x"
+                        if self.is_type("?x", PrimitiveTypeInfo::I32)
+                ));
+                rules.extend(rewrite!(
+                    "i64.shr_s-by-0";
+                    "(i64.shr_s ?x 0_i64)" <=> "?x"
+                        if self.is_type("?x", PrimitiveTypeInfo::I64)
+                ));
+            } else {
+                rules.extend(vec![
+                    rewrite!(
+                    "i32.or-x-x";
+                    "?x" => "(i32.or ?x ?x)"
+                        if self.is_type("?x", PrimitiveTypeInfo::I32)
+                    ),
+                    rewrite!(
+                        "i64.or-x-x";
+                        "?x" => "(i64.or ?x ?x)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I64)
+                    ),
+                    rewrite!(
+                        "i32.and-x-x";
+                        "?x" => "(i32.and ?x ?x)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I32)
+                    ),
+                    rewrite!(
+                        "i64.and-x-x";
+                        "?x" => "(i64.and ?x ?x)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I64)
+                    ),
+                    rewrite!(
+                        "i32.sub-0";
+                        "?x" => "(i32.sub ?x 0_i32)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I32)
+                    ),
+                    rewrite!(
+                        "i64.sub-0";
+                        "?x" => "(i64.sub ?x 0_i64)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I64)
+                    ),
+                    rewrite!(
+                        "i32.mul-x-1";
+                        "?x" => "(i32.mul ?x 1_i32)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I32)
+                    ),
+                    rewrite!(
+                        "i64.mul-x-1";
+                        "?x" => "(i64.mul ?x 1_i64)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I64)
+                    ),
+                    rewrite!(
+                        "f32.mul-x-1";
+                        "?x" => "(f32.mul ?x 1_f32)"
+                            if self.is_type("?x", PrimitiveTypeInfo::F32)
+                    ),
+                    rewrite!(
+                        "f64.mul-x-1";
+                        "?x" => "(f64.mul ?x 1_f64)"
+                            if self.is_type("?x", PrimitiveTypeInfo::F64)
+                    ),
+                    rewrite!(
+                        "i32.add-x-0";
+                        "?x" => "(i32.add ?x 0_i32)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I32)
+                    ),
+                    rewrite!(
+                        "i64.add-x-0";
+                        "?x" => "(i64.add ?x 0_i64)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I64)
+                    ),
+                    rewrite!(
+                        "f32-add-x-0";
+                        "?x" => "(f32.add ?x 0_f32)"
+                            if self.is_type("?x", PrimitiveTypeInfo::F32)
+                    ),
+                    rewrite!(
+                        "f64.add-x-0";
+                        "?x" => "(f64.add ?x 0_f64)"
+                            if self.is_type("?x", PrimitiveTypeInfo::F64)
+                    ),
+                    rewrite!(
+                        "i32.xor-x-0";
+                        "?x" => "(i32.xor ?x 0_i32)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I32)
+                    ),
+                    rewrite!(
+                        "i64.xor-x-0";
+                        "?x" => "(i64.xor ?x 0_i64)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I64)
+                    ),
+                    rewrite!(
+                        "i32.eq-x-0";
+                        "(i32.eqz ?x)" => "(i32.eq ?x 0_i32)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I32)
+                    ),
+                    rewrite!(
+                        "i64.eq-x-0";
+                        "(i64.eqz ?x)" => "(i64.eq ?x 0_i64)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I64)
+                    ),
+                    rewrite!(
+                        "i32.shl-by-0";
+                        "?x" => "(i32.shl ?x 0_i32)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I32)
+                    ),
+                    rewrite!(
+                        "i64.shl-by-0";
+                        "?x" => "(i64.shl ?x 0_i64)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I64)
+                    ),
+                    rewrite!(
+                        "i32.shr_u-by-0";
+                        "?x" => "(i32.shr_u ?x 0_i32)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I32)
+                    ),
+                    rewrite!(
+                        "i64.shr_u-by-0";
+                        "?x" => "(i64.shr_u ?x 0_i64)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I64)
+                    ),
+                    rewrite!(
+                        "i32.shr_s-by-0";
+                        "?x" => "(i32.shr_s ?x 0_i32)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I32)
+                    ),
+                    rewrite!(
+                        "i64.shr_s-by-0";
+                        "?x" => "(i64.shr_s ?x 0_i64)"
+                            if self.is_type("?x", PrimitiveTypeInfo::I64)
+                    ),
+                ]);
+            }
         }
 
         // A bunch of commutativity rules.
