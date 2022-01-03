@@ -17,3 +17,18 @@ anyhow = "1"
 wat = { version = "1", path = "../wat" }
 wasmprinter = { path = "../wasmprinter" }
 env_logger = "0.8"
+
+[features]
+peep-commute = []
+peep-idem = []
+peep-assoc = []
+peep-strength = []
+peep-select-flip = []
+peep-drop = []
+peep-neutral = []
+peep-globals = []
+peep-unfold = []
+peep-non-semantics = []
+motion-mutator = []
+all = ['peep-commute', 'peep-idem', 'peep-assoc', 'peep-strength', 'peep-select-flip', 'peep-drop', 'peep-neutral', 'peep-globals', 'peep-unfold', 'peep-non-semantics', 'motion-mutator']
+default=['all']

@@ -163,7 +163,10 @@ impl Mutator for CodemotionMutator {
     }
 
     fn can_mutate<'a>(&self, config: &'a WasmMutate) -> bool {
-        config.info().has_code() && config.info().num_local_functions() > 0
+        #[cfg(feature = "motion-mutator")]
+        return config.info().has_code() && config.info().num_local_functions() > 0;
+        #[cfg(not(feature = "motion-mutator"))]
+        return false;
     }
 }
 

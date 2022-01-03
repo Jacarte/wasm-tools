@@ -283,7 +283,7 @@ impl<'wasm> WasmMutate<'wasm> {
         define_mutators!(
             self,
             (
-                PeepholeMutator::new(20),
+                PeepholeMutator::new(10),
                 RemoveExportMutator,
                 RenameExportMutator { max_name_size: 100 },
                 SnipMutator,

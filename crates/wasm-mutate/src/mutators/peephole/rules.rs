@@ -23,168 +23,220 @@ impl PeepholeMutator {
         if config.reduce {
             // NB: these only go one way when we are reducing.
             rules.extend(vec![
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i32.or--1"; "(i32.or ?x -1_i32)" => "-1_i32"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i64.or--1"; "(i64.or ?x -1_i64)" => "-1_i64"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i32.or-x-x"; "(i32.or ?x ?x)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i64.or-x-x"; "(i64.or ?x ?x)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i32.and-x-x"; "(i32.and ?x ?x)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i64.and-x-x"; "(i64.and ?x ?x)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("select-same-branches"; "(select ?x ?y ?y)" => "?y"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i32.sub-0"; "(i32.sub ?x 0_i32)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i64.sub-0"; "(i64.sub ?x 0_i64)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i32.mul-x-1"; "(i32.mul ?x 1_i32)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i64.mul-x-1"; "(i64.mul ?x 1_i64)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("f32.mul-x-1"; "(f32.mul ?x 1_f32)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("f64.mul-x-1"; "(f64.mul ?x 1_f64)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i32.add-x-0"; "(i32.add ?x 0_i32)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i64.add-x-0"; "(i64.add ?x 0_i64)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("f32-add-x-0"; "(f32.add ?x 0_f32)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("f64.add-x-0"; "(f64.add ?x 0_f64)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i32.xor-x-0"; "(i32.xor ?x 0_i32)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i64.xor-x-0"; "(i64.xor ?x 0_i64)" => "?x"),
                 rewrite!("i32.eq-x-0"; "(i32.eq ?x 0_i32)" => "(i32.eqz ?x)"),
                 rewrite!("i64.eq-x-0"; "(i64.eq ?x 0_i64)" => "(i64.eqz ?x)"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i32.shl-by-0"; "(i32.shl ?x 0_i32)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i64.shl-by-0"; "(i64.shl ?x 0_i64)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i32.shr_u-by-0"; "(i32.shr_u ?x 0_i32)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i64.shr_u-by-0"; "(i64.shr_u ?x 0_i64)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i32.shr_s-by-0"; "(i32.shr_s ?x 0_i32)" => "?x"),
+                #[cfg(feature = "peep-idem")]
                 rewrite!("i64.shr_s-by-0"; "(i64.shr_s ?x 0_i64)" => "?x"),
             ]);
         } else {
             if !config.expand {
                 rules.extend(vec![
+                    #[cfg(feature = "peep-idem")]
                     rewrite!("i32.or--1"; "(i32.or ?x -1_i32)" => "-1_i32"),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!("i64.or--1"; "(i64.or ?x -1_i64)" => "-1_i64"),
                 ]);
 
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i32.or-x-x";
                     "(i32.or ?x ?x)" <=> "?x"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i64.or-x-x";
                     "(i64.or ?x ?x)" <=> "?x"
                         if self.is_type("?x", PrimitiveTypeInfo::I64)
                 ));
 
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i32.and-x-x";
                     "(i32.and ?x ?x)" <=> "?x"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i64.and-x-x";
                     "(i64.and ?x ?x)" <=> "?x"
                         if self.is_type("?x", PrimitiveTypeInfo::I64)
                 ));
 
+                #[cfg(feature = "peep-idem")]
                 rules.push(rewrite!("select-same-branches"; "(select ?x ?y ?y)" => "?y"));
 
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i32.sub-0";
                     "(i32.sub ?x 0_i32)" <=> "?x"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i64.sub-0";
                     "(i64.sub ?x 0_i64)" <=> "?x"
                         if self.is_type("?x", PrimitiveTypeInfo::I64)
                 ));
 
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i32.mul-x-1";
                     "?x" <=> "(i32.mul ?x 1_i32)"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i64.mul-x-1";
                     "?x" <=> "(i64.mul ?x 1_i64)"
                         if self.is_type("?x", PrimitiveTypeInfo::I64)
                 ));
 
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "f32.mul-x-1";
                     "?x" <=> "(f32.mul ?x 1_f32)"
                         if self.is_type("?x", PrimitiveTypeInfo::F32)
                 ));
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "f64.mul-x-1";
                     "?x" <=> "(f64.mul ?x 1_f64)"
                         if self.is_type("?x", PrimitiveTypeInfo::F64)
                 ));
 
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i32.add-x-0";
                     "?x" <=> "(i32.add ?x 0_i32)"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i64.add-x-0";
                     "?x" <=> "(i64.add ?x 0_i64)"
                         if self.is_type("?x", PrimitiveTypeInfo::I64)
                 ));
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "f32-add-x-0";
                     "?x" <=> "(f32.add ?x 0_f32)"
                         if self.is_type("?x", PrimitiveTypeInfo::F32)
                 ));
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "f64.add-x-0";
                     "?x" <=> "(f64.add ?x 0_f64)"
                         if self.is_type("?x", PrimitiveTypeInfo::F64)
                 ));
 
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i32.xor-x-0";
                     "?x" <=> "(i32.xor ?x 0_i32)"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i64.xor-x-0";
                     "?x" <=> "(i64.xor ?x 0_i64)"
                         if self.is_type("?x", PrimitiveTypeInfo::I64)
                 ));
 
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i32.eq-x-0";
                     "(i32.eq ?x 0_i32)" <=> "(i32.eqz ?x)"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i64.eq-x-0";
                     "(i64.eq ?x 0_i64)" <=> "(i64.eqz ?x)"
                         if self.is_type("?x", PrimitiveTypeInfo::I64)
                 ));
 
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i32.shl-by-0";
                     "(i32.shl ?x 0_i32)" <=> "?x"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i64.shl-by-0";
                     "(i64.shl ?x 0_i64)" <=> "?x"
                         if self.is_type("?x", PrimitiveTypeInfo::I64)
                 ));
 
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i32.shr_u-by-0";
                     "(i32.shr_u ?x 0_i32)" <=> "?x"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i64.shr_u-by-0";
                     "(i64.shr_u ?x 0_i64)" <=> "?x"
                         if self.is_type("?x", PrimitiveTypeInfo::I64)
                 ));
 
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i32.shr_s-by-0";
                     "(i32.shr_s ?x 0_i32)" <=> "?x"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-idem")]
                 rules.extend(rewrite!(
                     "i64.shr_s-by-0";
                     "(i64.shr_s ?x 0_i64)" <=> "?x"
@@ -192,121 +244,145 @@ impl PeepholeMutator {
                 ));
             } else {
                 rules.extend(vec![
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                     "i32.or-x-x";
                     "?x" => "(i32.or ?x ?x)"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i64.or-x-x";
                         "?x" => "(i64.or ?x ?x)"
                             if self.is_type("?x", PrimitiveTypeInfo::I64)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i32.and-x-x";
                         "?x" => "(i32.and ?x ?x)"
                             if self.is_type("?x", PrimitiveTypeInfo::I32)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i64.and-x-x";
                         "?x" => "(i64.and ?x ?x)"
                             if self.is_type("?x", PrimitiveTypeInfo::I64)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i32.sub-0";
                         "?x" => "(i32.sub ?x 0_i32)"
                             if self.is_type("?x", PrimitiveTypeInfo::I32)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i64.sub-0";
                         "?x" => "(i64.sub ?x 0_i64)"
                             if self.is_type("?x", PrimitiveTypeInfo::I64)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i32.mul-x-1";
                         "?x" => "(i32.mul ?x 1_i32)"
                             if self.is_type("?x", PrimitiveTypeInfo::I32)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i64.mul-x-1";
                         "?x" => "(i64.mul ?x 1_i64)"
                             if self.is_type("?x", PrimitiveTypeInfo::I64)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "f32.mul-x-1";
                         "?x" => "(f32.mul ?x 1_f32)"
                             if self.is_type("?x", PrimitiveTypeInfo::F32)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "f64.mul-x-1";
                         "?x" => "(f64.mul ?x 1_f64)"
                             if self.is_type("?x", PrimitiveTypeInfo::F64)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i32.add-x-0";
                         "?x" => "(i32.add ?x 0_i32)"
                             if self.is_type("?x", PrimitiveTypeInfo::I32)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i64.add-x-0";
                         "?x" => "(i64.add ?x 0_i64)"
                             if self.is_type("?x", PrimitiveTypeInfo::I64)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "f32-add-x-0";
                         "?x" => "(f32.add ?x 0_f32)"
                             if self.is_type("?x", PrimitiveTypeInfo::F32)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "f64.add-x-0";
                         "?x" => "(f64.add ?x 0_f64)"
                             if self.is_type("?x", PrimitiveTypeInfo::F64)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i32.xor-x-0";
                         "?x" => "(i32.xor ?x 0_i32)"
                             if self.is_type("?x", PrimitiveTypeInfo::I32)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i64.xor-x-0";
                         "?x" => "(i64.xor ?x 0_i64)"
                             if self.is_type("?x", PrimitiveTypeInfo::I64)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i32.eq-x-0";
                         "(i32.eqz ?x)" => "(i32.eq ?x 0_i32)"
                             if self.is_type("?x", PrimitiveTypeInfo::I32)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i64.eq-x-0";
                         "(i64.eqz ?x)" => "(i64.eq ?x 0_i64)"
                             if self.is_type("?x", PrimitiveTypeInfo::I64)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i32.shl-by-0";
                         "?x" => "(i32.shl ?x 0_i32)"
                             if self.is_type("?x", PrimitiveTypeInfo::I32)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i64.shl-by-0";
                         "?x" => "(i64.shl ?x 0_i64)"
                             if self.is_type("?x", PrimitiveTypeInfo::I64)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i32.shr_u-by-0";
                         "?x" => "(i32.shr_u ?x 0_i32)"
                             if self.is_type("?x", PrimitiveTypeInfo::I32)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i64.shr_u-by-0";
                         "?x" => "(i64.shr_u ?x 0_i64)"
                             if self.is_type("?x", PrimitiveTypeInfo::I64)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i32.shr_s-by-0";
                         "?x" => "(i32.shr_s ?x 0_i32)"
                             if self.is_type("?x", PrimitiveTypeInfo::I32)
                     ),
+                    #[cfg(feature = "peep-idem")]
                     rewrite!(
                         "i64.shr_s-by-0";
                         "?x" => "(i64.shr_s ?x 0_i64)"
@@ -321,26 +397,42 @@ impl PeepholeMutator {
         // Even though these don't reduce code size themselves, they can help
         // other rules apply, so we add them even when we aren't just reducing.
 
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("i32.add-commutes"; "(i32.add ?x ?y)" <=> "(i32.add ?y ?x)"));
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("i64.add-commutes"; "(i64.add ?x ?y)" <=> "(i64.add ?y ?x)"));
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("f32.add-commutes"; "(f32.add ?x ?y)" <=> "(f32.add ?y ?x)"));
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("f64.add-commutes"; "(f64.add ?x ?y)" <=> "(f64.add ?y ?x)"));
 
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("i32.mul-commutes"; "(i32.mul ?x ?y)" <=> "(i32.mul ?y ?x)" ));
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("i64.mul-commutes"; "(i64.mul ?x ?y)" <=> "(i64.mul ?y ?x)" ));
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("f32.mul-commutes"; "(f32.mul ?x ?y)" <=> "(f32.mul ?y ?x)" ));
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("f64.mul-commutes"; "(f64.mul ?x ?y)" <=> "(f64.mul ?y ?x)" ));
 
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("i32.and-commutes"; "(i32.and ?x ?y)" <=> "(i32.and ?y ?x)"));
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("i64.and-commutes"; "(i64.and ?x ?y)" <=> "(i64.and ?y ?x)"));
 
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("i32.or-commutes"; "(i32.or ?x ?y)" <=> "(i32.or ?y ?x)"));
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("i64.or-commutes"; "(i64.or ?x ?y)" <=> "(i64.or ?y ?x)"));
 
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("i32.xor-commutes"; "(i32.xor ?x ?y)" <=> "(i32.xor ?y ?x)"));
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("i64.xor-commutes"; "(i64.xor ?x ?y)" <=> "(i64.xor ?y ?x)"));
 
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("i32.eq-commutes"; "(i32.eq ?x ?y)" <=> "(i32.eq ?y ?x)"));
+        #[cfg(feature = "peep-commute")]
         rules.extend(rewrite!("i64.eq-commutes"; "(i64.eq ?x ?y)" <=> "(i64.eq ?y ?x)"));
 
         // A bunch of associativity rules.
@@ -348,55 +440,67 @@ impl PeepholeMutator {
         // Even though these don't reduce code size themselves, they can help
         // other rules apply, so we add them even when we aren't just reducing.
 
+        #[cfg(feature = "peep-assoc")]
         rules.extend(rewrite!(
             "i32.mul-associates";
             "(i32.mul ?x (i32.mul ?y ?z))" <=> "(i32.mul (i32.mul ?x ?y) ?z)"
         ));
+        #[cfg(feature = "peep-assoc")]
         rules.extend(rewrite!(
             "i64.mul-associates";
             "(i64.mul ?x (i64.mul ?y ?z))" <=> "(i64.mul (i64.mul ?x ?y) ?z)"
         ));
 
+        #[cfg(feature = "peep-assoc")]
         rules.extend(rewrite!(
             "i32.add-associates";
             "(i32.add ?x (i32.add ?y ?z))" <=> "(i32.add (i32.add ?x ?y) ?z)"
         ));
+        #[cfg(feature = "peep-assoc")]
         rules.extend(rewrite!(
             "i64.add-associates";
             "(i64.add ?x (i64.add ?y ?z))" <=> "(i64.add (i64.add ?x ?y) ?z)"
         ));
 
+        #[cfg(feature = "peep-assoc")]
         rules.extend(rewrite!(
             "i32.and-associates";
             "(i32.and ?x (i32.and ?y ?z))" <=> "(i32.and (i32.and ?x ?y) ?z)"
         ));
+        #[cfg(feature = "peep-assoc")]
         rules.extend(rewrite!(
             "i64.and-associates";
             "(i64.and ?x (i64.and ?y ?z))" <=> "(i64.and (i64.and ?x ?y) ?z)"
         ));
 
+        #[cfg(feature = "peep-assoc")]
         rules.extend(rewrite!(
             "i32.or-associates";
             "(i32.or ?x (i32.or ?y ?z))" <=> "(i32.or (i32.or ?x ?y) ?z)"
         ));
+        #[cfg(feature = "peep-assoc")]
         rules.extend(rewrite!(
             "i64.or-associates";
             "(i64.or ?x (i64.or ?y ?z))" <=> "(i64.or (i64.or ?x ?y) ?z)"
         ));
 
+        #[cfg(feature = "peep-assoc")]
         rules.extend(rewrite!(
             "i32.xor-associates";
             "(i32.xor ?x (i32.xor ?y ?z))" <=> "(i32.xor (i32.xor ?x ?y) ?z)"
         ));
+        #[cfg(feature = "peep-assoc")]
         rules.extend(rewrite!(
             "i64.xor-associates";
             "(i64.xor ?x (i64.xor ?y ?z))" <=> "(i64.xor (i64.xor ?x ?y) ?z)"
         ));
 
+        #[cfg(feature = "peep-assoc")]
         rules.extend(rewrite!(
             "i32.eq-associates";
             "(i32.eq ?x (i32.eq ?y ?z))" <=> "(i32.eq (i32.eq ?x ?y) ?z)"
         ));
+        #[cfg(feature = "peep-assoc")]
         rules.extend(rewrite!(
             "i64.eq-associates";
             "(i64.eq ?x (i64.eq ?y ?z))" <=> "(i64.eq (i64.eq ?x ?y) ?z)"
@@ -404,16 +508,23 @@ impl PeepholeMutator {
 
         // Undoing `x * 2 ==> x << 1` strength reduction, etc...
         if !config.reduce {
+            #[cfg(feature = "peep-strength")]
             rules.extend(rewrite!("i32.mul-by-2"; "(i32.shl ?x 1_i32)" <=> "(i32.mul ?x 2_i32)"));
+            #[cfg(feature = "peep-strength")]
             rules.extend(rewrite!("i64.mul-by-2"; "(i64.shl ?x 1_i64)" <=> "(i64.mul ?x 2_i64)"));
+            #[cfg(feature = "peep-strength")]
             rules.extend(rewrite!("i32.mul-by-4"; "(i32.shl ?x 2_i32)" <=> "(i32.mul ?x 4_i32)"));
+            #[cfg(feature = "peep-strength")]
             rules.extend(rewrite!("i64.mul-by-4"; "(i64.shl ?x 2_i64)" <=> "(i64.mul ?x 4_i64)"));
+            #[cfg(feature = "peep-strength")]
             rules.extend(rewrite!("i32.mul-by-8"; "(i32.shl ?x 3_i32)" <=> "(i32.mul ?x 8_i32)"));
+            #[cfg(feature = "peep-strength")]
             rules.extend(rewrite!("i64.mul-by-8"; "(i64.shl ?x 3_i64)" <=> "(i64.mul ?x 8_i64)"));
         }
 
         // Invert a `select` condition and swap its consequent and alternative.
         if !config.reduce {
+            #[cfg(feature = "peep-select-flip")]
             rules.extend(
                 rewrite!("select-invert"; "(select ?x ?y ?z)" <=> "(select (i32.eqz ?x) ?z ?y)"),
             );
@@ -421,28 +532,34 @@ impl PeepholeMutator {
 
         // Convert `x + x` into `x * 2`.
         if !config.reduce {
+            #[cfg(feature = "peep-strength")]
             rules.extend(rewrite!("i32.add-x-x"; "(i32.add ?x ?x)" <=> "(i32.mul ?x 2_i32)"));
+            #[cfg(feature = "peep-strength")]
             rules.extend(rewrite!("i64.add-x-x"; "(i64.add ?x ?x)" <=> "(i64.mul ?x 2_i64)"));
         }
 
         // Mess with dropped subexpressions.
         if !config.reduce {
             rules.extend(vec![
+                #[cfg(feature = "peep-drop")]
                 rewrite!(
                     "i32.drop-x";
                     "(drop ?x)" => "(drop i32.rand)"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ),
+                #[cfg(feature = "peep-drop")]
                 rewrite!(
                     "i64.drop-x";
                     "(drop ?x)" => "(drop i64.rand)"
                         if self.is_type("?x", PrimitiveTypeInfo::I64)
                 ),
+                #[cfg(feature = "peep-drop")]
                 rewrite!(
                     "f32.drop-x";
                     "(drop ?x)" => "(drop 0_f32)"
                         if self.is_type("?x", PrimitiveTypeInfo::F32)
                 ),
+                #[cfg(feature = "peep-drop")]
                 rewrite!(
                     "f64.drop-x";
                     "(drop ?x)" => "(drop 0_f32)"
@@ -453,6 +570,7 @@ impl PeepholeMutator {
 
         // Insert some stack-neutral sub-expressions.
         if !config.reduce {
+            #[cfg(feature = "peep-neutral")]
             rules.extend(vec![
                 rewrite!("container-nop-x"; "?x" => "(container nop ?x)"),
                 rewrite!("container-x-nop"; "?x" => "(container ?x nop)"),
@@ -466,6 +584,7 @@ impl PeepholeMutator {
         // Spill expressions to a new global and then use the global's value.
         if !config.reduce {
             let max_globals = 100_000;
+            #[cfg(feature = "peep-globals")]
             rules.extend(vec![
                 rewrite!(
                     "i32.use_of_global";
@@ -496,6 +615,7 @@ impl PeepholeMutator {
 
         // Unfolding constants.
         if !config.reduce {
+            #[cfg(feature = "peep-unfold")]
             rules.extend(vec![
                 rewrite!(
                     "i32.unfold";
@@ -516,7 +636,9 @@ impl PeepholeMutator {
         // thing we need to preserve is that we are emitting valid, well-typed
         // Wasm.
         if !config.preserve_semantics {
-            // Replace an expression with either zero, one, or a random constant.
+            // Replace an expression with either zero, one, or a random
+            // constant.
+            #[cfg(feature = "peep-non-semantics")]
             rules.extend(vec![
                 rewrite!(
                     "replace-with-i32-1";
@@ -552,11 +674,13 @@ impl PeepholeMutator {
 
             if !config.reduce {
                 // `x <=> x + 1`
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i32.add-1";
                     "?x" <=> "(i32.add ?x 1_i32)"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i64.add-1";
                     "?x" <=> "(i64.add ?x 1_i64)"
@@ -564,11 +688,13 @@ impl PeepholeMutator {
                 ));
 
                 // `x <=> x - 1`
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i32.sub-1";
                     "?x" <=> "(i32.sub ?x 1_i32)"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i64.sub-1";
                     "?x" <=> "(i64.sub ?x 1_i64)"
@@ -576,11 +702,13 @@ impl PeepholeMutator {
                 ));
 
                 // `x <=> x & 1`
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i32.and-1";
                     "?x" <=> "(i32.and ?x 1_i32)"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i64.and-1";
                     "?x" <=> "(i64.and ?x 1_i64)"
@@ -588,11 +716,13 @@ impl PeepholeMutator {
                 ));
 
                 // `x <=> x | 1`
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i32.or-1";
                     "?x" <=> "(i32.or ?x 1_i32)"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i64.or-1";
                     "?x" <=> "(i64.or ?x 1_i64)"
@@ -600,11 +730,13 @@ impl PeepholeMutator {
                 ));
 
                 // `x <=> x ^ 1`
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i32.xor-1";
                     "?x" <=> "(i32.xor ?x 1_i32)"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i64.xor-1";
                     "?x" <=> "(i64.xor ?x 1_i64)"
@@ -612,11 +744,13 @@ impl PeepholeMutator {
                 ));
 
                 // `x <=> x << 1`
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i32.shl-1";
                     "?x" <=> "(i32.shl ?x 1_i32)"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i64.shl-1";
                     "?x" <=> "(i64.shl ?x 1_i64)"
@@ -624,21 +758,25 @@ impl PeepholeMutator {
                 ));
 
                 // `x <=> x >> 1`
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i32.shr_u-1";
                     "?x" <=> "(i32.shr_u ?x 1_i32)"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i64.shr_u-1";
                     "?x" <=> "(i64.shr_u ?x 1_i64)"
                         if self.is_type("?x", PrimitiveTypeInfo::I64)
                 ));
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i32.shr_s-1";
                     "?x" <=> "(i32.shr_s ?x 1_i32)"
                         if self.is_type("?x", PrimitiveTypeInfo::I32)
                 ));
+                #[cfg(feature = "peep-non-semantics")]
                 rules.extend(rewrite!(
                     "i64.shr_s-1";
                     "?x" <=> "(i64.shr_s ?x 1_i64)"
