@@ -2,7 +2,6 @@
 name = "wasm-mutate"
 version = "0.1.0"
 edition = "2018"
-default-features = false
 
 [dependencies]
 structopt = { optional = true, version = "0.3" }
