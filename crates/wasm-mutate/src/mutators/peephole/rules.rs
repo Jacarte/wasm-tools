@@ -570,13 +570,18 @@ impl PeepholeMutator {
 
         // Insert some stack-neutral sub-expressions.
         if !config.reduce {
-            #[cfg(feature = "peep-neutral")]
             rules.extend(vec![
+                #[cfg(feature = "peep-neutral")]
                 rewrite!("container-nop-x"; "?x" => "(container nop ?x)"),
+                #[cfg(feature = "peep-neutral")]
                 rewrite!("container-x-nop"; "?x" => "(container ?x nop)"),
+                #[cfg(feature = "peep-neutral")]
                 rewrite!("container-drop-i32.rand-x"; "?x" => "(container (drop i32.rand) ?x)"),
+                #[cfg(feature = "peep-neutral")]
                 rewrite!("container-drop-i64.rand-x"; "?x" => "(container (drop i64.rand) ?x)"),
+                #[cfg(feature = "peep-neutral")]
                 rewrite!("container-x-drop-i32.rand"; "?x" => "(container ?x (drop i32.rand))"),
+                #[cfg(feature = "peep-neutral")]
                 rewrite!("container-x-drop-i64.rand"; "?x" => "(container ?x (drop i64.rand))"),
             ]);
         }
