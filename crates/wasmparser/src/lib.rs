@@ -22,8 +22,9 @@
 //! If you need random access to the entire WebAssembly data-structure,
 //! this is not the right library for you. You could however, build such
 //! a data-structure using this library.
-
+#![feature(format_args_capture)]
 #![deny(missing_docs)]
+#![feature(result_cloned)]
 
 pub use crate::binary_reader::{BinaryReader, BinaryReaderError, Result};
 pub use crate::parser::*;

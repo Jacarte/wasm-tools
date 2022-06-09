@@ -56,6 +56,8 @@
 #![deny(missing_docs, missing_debug_implementations)]
 // Needed for the `instructions!` macro in `src/code_builder.rs`.
 #![recursion_limit = "512"]
+#![feature(result_cloned)]
+
 
 mod component;
 mod config;

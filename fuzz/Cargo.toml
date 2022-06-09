@@ -81,3 +81,17 @@ name = "mutate"
 path = "fuzz_targets/mutate.rs"
 test = false
 doc = false
+
+
+[[bin]]
+name = "egraphs-coverage"
+path = "fuzz_targets/egraphs-coverage.rs"
+test = false
+doc = false
+
+
+[features]
+default = []
+
+validate-fuzz = []
+mutate-in-middle = []

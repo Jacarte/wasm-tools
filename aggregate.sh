@@ -1,0 +1,3 @@
+python3 egraphs-data-scripts/aggregate_module_coverage.py wasmparser validate2.json index.validate-fuzz,mutate-in-middle.120.json validate-fuzz,mutate-in-middle.120.logs index.validate-fuzz,mutate-in-middle.300.json validate-fuzz,mutate-in-middle.300.logs index.validate-fuzz,mutate-in-middle.600.json validate-fuzz,mutate-in-middle.600.logs index.validate-fuzz,mutate-in-middle.1800.json validate-fuzz,mutate-in-middle.1800.logs
+
+python3 egraphs-data-scripts/aggregate_module_coverage.py wasmparser validate1.json index.validate-fuzz.120.json validate-fuzz.120.logs index.validate-fuzz.300.json validate-fuzz.300.logs  index.validate-fuzz.600.json validate-fuzz.600.logs index.validate-fuzz.1800.json  validate-fuzz.1800.logs 

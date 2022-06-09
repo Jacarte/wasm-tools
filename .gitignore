@@ -6,3 +6,7 @@ publish
 *.wasm
 *.wat
 test.config
+*.logs
+*.html
+*.json
+data.*
