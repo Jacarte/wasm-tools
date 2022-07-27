@@ -38,9 +38,9 @@ use crate::{
     module::{map_type, PrimitiveTypeInfo},
     Error, ModuleInfo, Result, WasmMutate, ErrorKind, mutators::{peephole::eggsy::expr_enumerator::lazy_expand_aux_sequential, MutationMap},
 };
-use egg::{Rewrite, Runner};
+use egg::{Rewrite, Runner, RecExpr, Language};
 use rand::{prelude::SmallRng, Rng};
-use std::{ops::Range, collections::HashMap};
+use std::{ops::Range, collections::HashMap, hash::Hash, cmp::max};
 use std::{borrow::Cow, fmt::Debug};
 use wasm_encoder::{CodeSection, Function, GlobalSection, Instruction, Module, ValType};
 use wasmparser::{CodeSectionReader, FunctionBody, GlobalSectionReader, LocalsReader};
@@ -429,7 +429,7 @@ impl PeepholeMutator {
         oidx: usize,
         max_trees: usize,
         rules: &[Rewrite<Lang, PeepholeMutationAnalysis>],
-    ) -> Result<Box<dyn Iterator<Item = Result<(String, String)>> + 'a>> {
+    ) -> Result<Box<dyn Iterator<Item = Result<(TreeInfo, TreeInfo)>> + 'a>> {
         let code_section = config.info().get_code_section();
         let mut sectionreader = CodeSectionReader::new(code_section.data, 0)?;
         let function_count = sectionreader.get_count();
@@ -547,8 +547,9 @@ impl PeepholeMutator {
         let iterator = iter
             .filter(move |expr| !expr.to_string().eq(&startcmp.to_string()))
             .map(move |expr| {
-
-                Ok((start.pretty(60), expr.pretty(60)))
+                let infostart = TreeInfo::new(start.clone());
+                let infonew = TreeInfo::new(expr.clone());
+                Ok((infostart, infonew))
             })
             // Read subtrees until max_trees, if max_trees is reached, then this has "infinite" possible mutations up to egraph size S
             .take(max_trees);
@@ -566,6 +567,51 @@ impl PeepholeMutator {
     }
 
 }
+
+#[derive(Clone)]
+struct TreeInfo {
+    nodes_count: usize,
+    tree_height: usize,
+    tree_profiling: HashMap<String, usize>,
+    display: String,
+    unique_nodes: usize,
+}
+
+impl TreeInfo {
+
+    /// Traverses the tree to get the height
+    fn get_height(lang: &RecExpr<Lang>, root: usize) -> (usize, usize) {
+
+        let rootnode = &lang.as_ref()[root];
+
+        let mut s = 1;
+        let mut c = 1;
+
+        for &ch in rootnode.children() {
+            let (nc, tmps) = Self::get_height(lang, usize::from(ch));
+
+            s = max(tmps, s + 1);
+            c += nc;
+        }
+
+        return (c, s);
+    }
+
+    /// Return tree info out of RexExpr<Lang>
+    pub fn new(lang: RecExpr<Lang>) -> TreeInfo {
+
+        let (c, h) = Self::get_height(&lang, lang.as_ref().len() - 1);
+
+        TreeInfo {
+            nodes_count: lang.as_ref().len(),
+            tree_height: h,
+            tree_profiling: HashMap::new(),
+            display: lang.pretty(60),
+            unique_nodes: c,
+        }
+    }
+
+ }
 
 /// Meta mutator for peephole
 impl Mutator for PeepholeMutator {
@@ -630,7 +676,7 @@ impl Mutator for PeepholeMutator {
                 if oidx > 20 {
                     break  'functions;
                 }
-                
+
                 count += 1;
 
                 if count % 99 == 0{
@@ -672,11 +718,20 @@ impl Mutator for PeepholeMutator {
                                             println!("{e}")
                                         }
                                         Ok((or, new)) => {
-                                            original=or;
+                                            original=or.display;
                                             trees_count += 1;
 
                                             let mut meta: HashMap<String, String> = HashMap::new();
-                                            meta.insert("new_tree_display".to_string(), new);
+                                            meta.insert("new_tree_display".to_string(), new.display);
+                                            meta.insert("new_tree_count".to_string(), format!("{}", new.nodes_count));
+                                            meta.insert("new_tree_height".to_string(), format!("{}", new.tree_height));
+                                            meta.insert("new_tree_unique_nodes".to_string(), format!("{}", new.unique_nodes));
+                                            //meta.insert("new_tree_count".to_string(), format!("{}", new.nodes_count));
+
+                                            meta.insert("orig_tree_count".to_string(), format!("{}", or.nodes_count));
+                                            meta.insert("orig_tree_height".to_string(), format!("{}", or.tree_height));
+                                            meta.insert("orig_tree_unique_nodes".to_string(), format!("{}", or.unique_nodes));
+                                            //meta.insert("orig_tree_count".to_string(), format!("{}", or.nodes_count));
 
                                             let mutationinfo  = MutationMap{
                                                 section: wasm_encoder::SectionId::Code,
