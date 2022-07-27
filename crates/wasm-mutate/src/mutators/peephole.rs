@@ -711,7 +711,7 @@ impl Mutator for PeepholeMutator {
 
                             if deeplevel > 2 {
                                 trees_count = 0;
-                                for s in ite {
+                                for (index, s) in ite.enumerate() {
                                     // do nothing, to see expressions
                                     match s {
                                         Err(e) => {
@@ -736,6 +736,7 @@ impl Mutator for PeepholeMutator {
 
                                             meta.insert("function_index".to_string(), format!("{}", fidx));
                                             meta.insert("operator_index".to_string(), format!("{}", oidx));
+                                            meta.insert("iteration_index".to_string(), format!("{}", index));
 
                                             let mutationinfo  = MutationMap{
                                                 section: wasm_encoder::SectionId::Code,
