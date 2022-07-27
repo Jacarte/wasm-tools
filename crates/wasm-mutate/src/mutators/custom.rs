@@ -1,7 +1,9 @@
 //! Mutate custom sections.
+#![allow(missing_docs)]
 
-use super::Mutator;
+use super::{Mutator, MutationMap};
 use rand::{seq::SliceRandom, Rng};
+use wasm_encoder::{CodeSection, SectionId};
 
 #[derive(Clone, Copy)]
 pub struct CustomSectionMutator;
@@ -9,6 +11,36 @@ pub struct CustomSectionMutator;
 impl Mutator for CustomSectionMutator {
     fn can_mutate(&self, config: &crate::WasmMutate) -> bool {
         config.info().has_custom_section()
+    }
+
+    fn get_mutation_info(&self, config: &crate::WasmMutate) -> Option<Vec<super::MutationMap>> {
+
+        let mut r = vec![];
+
+        let custom_section_indices: Vec<_> = config
+            .info()
+            .raw_sections
+            .iter()
+            .enumerate()
+            .filter(|(_i, s)| s.id == wasm_encoder::SectionId::Custom as u8)
+            .map(|(i, _s)| (i, _s))
+            .collect();
+
+        for (idx, s) in custom_section_indices {
+            r.push(MutationMap { 
+                section: SectionId::Custom, 
+                // It is indexed regarding all sections
+                is_indexed: true, idx, how: "Change the name of the custom section. Infinite ways to do so".to_string(), 
+                many: -1, display: None });
+            r.push(MutationMap { 
+                section: SectionId::Custom, 
+                // It is indexed regarding all sections
+                is_indexed: true, idx, how: "Change the data of the custom section. Infinite ways to do so".to_string(), 
+                many: -1,
+                display: None, })
+        }
+
+        Some(r)
     }
 
     fn mutate<'a>(

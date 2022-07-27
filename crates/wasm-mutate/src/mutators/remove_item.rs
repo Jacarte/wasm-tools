@@ -30,6 +30,7 @@ impl Mutator for RemoveItemMutator {
         self.0.can_mutate(config)
     }
 
+
     fn mutate<'a>(
         self,
         config: &'a mut WasmMutate,
@@ -84,6 +85,7 @@ impl Item {
             Item::Element => !config.preserve_semantics && info.num_elements() > 0,
         }
     }
+
 
     fn choose_removal_index(&self, config: &mut WasmMutate) -> u32 {
         let info = config.info();

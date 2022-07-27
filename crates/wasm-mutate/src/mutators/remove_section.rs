@@ -1,6 +1,6 @@
 //! Mutators related to custom sections.
 
-use super::Mutator;
+use super::{Mutator, MutationMap};
 use crate::{Result, WasmMutate};
 use rand::seq::SliceRandom;
 use wasm_encoder::{Module, SectionId};
@@ -47,6 +47,32 @@ impl Mutator for RemoveSection {
                 .iter()
                 .any(|s| is_empty_section(s)),
         }
+    }
+
+    fn get_mutation_info(&self, config: &WasmMutate) -> Option<Vec<super::MutationMap>> {
+        let mut r = vec![];
+
+        let removal_candidates = config
+            .info()
+            .raw_sections
+            .iter()
+            .enumerate()
+            .filter_map(|(i, s)| match self {
+                Self::Empty if is_empty_section(s) => Some(i),
+                Self::Custom if s.id == wasm_encoder::SectionId::Custom as u8 => Some(i),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+
+        for idx in removal_candidates {
+            r.push(MutationMap { 
+                section: SectionId::Custom, 
+                // It is indexed regarding all sections
+                is_indexed: true, idx, how: "Remove custom section".to_string(), 
+                many: 1, display: None });
+        }
+
+        Some(r)
     }
 
     fn mutate<'a>(

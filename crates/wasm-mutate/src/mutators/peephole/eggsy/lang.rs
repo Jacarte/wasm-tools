@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 //! Nodes for intermediate representation of Wasm operators
 //!
 use egg::Id;

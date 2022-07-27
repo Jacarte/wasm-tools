@@ -1,5 +1,6 @@
 //! This mutator modifies the constant initializer expressions between various valid forms in
 //! entities which require constant initializers.
+#![allow(missing_docs)]
 
 use crate::mutators::translate::{self, InitExprKind, Item, Translator};
 use crate::{Error, Mutator, Result};

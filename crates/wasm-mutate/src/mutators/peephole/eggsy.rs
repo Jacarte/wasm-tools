@@ -1,6 +1,7 @@
 //! Intermediate representation of Wasm operators to be used with the `egg`
 //! engine
 //!
+#![allow(missing_docs)]
 
 pub mod analysis;
 pub mod encoder;

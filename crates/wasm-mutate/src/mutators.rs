@@ -19,6 +19,7 @@
 //! iterates through the defined functions, and then each instruction of the
 //! functions is processed in order to construct an equivalent piece of code.
 //!
+#![allow(missing_docs)]
 
 pub mod add_function;
 pub mod add_type;
@@ -43,8 +44,30 @@ use std::borrow::Cow;
 
 use super::Result;
 use crate::WasmMutate;
-use wasm_encoder::Module;
+use wasm_encoder::{Module, CodeSection, SectionId};
 use wasmparser::Operator;
+
+
+#[derive(Debug)]
+pub struct MutationMap {
+    /// Code section where the target is located
+    pub section: SectionId,
+
+    /// True if the target element belongs to an index, e.g. fidx
+    pub is_indexed: bool,
+
+    /// Index of the element, if indexed, otherwise its offset in the binary
+    pub idx: usize,
+
+    /// Natural description of how the mutation can be applide, e.g. for the custom, if it is the name or the data part
+    pub how: String,
+
+    /// Count (if possible) of the number of possible mutations depending on how (-1 for infinite)
+    pub many: i64,
+
+    /// Display of the target, None if it is not relevant
+    pub display: Option<String>
+}
 
 /// A mutation that can be applied to a Wasm module to produce a new, mutated
 /// Wasm module.
@@ -66,6 +89,12 @@ pub trait Mutator {
     /// `WasmMutate` has been configured to only perform size-reducing
     /// mutations, and if so return `false` here.
     fn can_mutate(&self, config: &WasmMutate) -> bool;
+
+    /// Provides mutation map, to which parts of the target it can be applied, e.g. to function idx I
+    /// The cb function should take: the section to which is can be applied, the index of the element it its corresponding index, how the mutation can be applied, e.g. changing name or chanding data, and how many mutations are possible (-1 if infinite)
+    fn get_mutation_info(&self, config: &WasmMutate) -> Option<Vec<MutationMap>> {
+        None
+    }
 
     /// Run this mutation.
     ///
@@ -181,4 +210,5 @@ impl WasmMutate<'_> {
             }
         }
     }
+
 }

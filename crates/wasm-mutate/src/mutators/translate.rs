@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use crate::{Error, Result};
 use wasm_encoder::*;
 use wasmparser::{

@@ -10,8 +10,8 @@ use std::iter;
 /// This mutator will create the type section if none exists.
 #[derive(Clone, Copy)]
 pub struct AddTypeMutator {
-    pub(crate) max_params: usize,
-    pub(crate) max_results: usize,
+    pub max_params: usize,
+    pub max_results: usize,
 }
 
 impl AddTypeMutator {

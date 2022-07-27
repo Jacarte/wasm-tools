@@ -80,7 +80,7 @@ fn combine_type_sizes(a: usize, b: usize, offset: usize) -> Result<usize> {
     match a.checked_add(b) {
         Some(sum) if sum < MAX_WASM_TYPE_SIZE => Ok(sum),
         _ => Err(BinaryReaderError::new(
-            format!("effective type size exceeds the limit of {MAX_WASM_TYPE_SIZE}"),
+            format!("effective type size exceeds the limit of {}", MAX_WASM_TYPE_SIZE),
             offset,
         )),
     }
@@ -1231,7 +1231,7 @@ impl Validator {
                 // Validate that all values were used for the component
                 if let Some(index) = component.values.iter().position(|(_, used)| !*used) {
                     return Err(BinaryReaderError::new(
-                        format!("value index {index} was not used as part of an instantiation, start function, or export"),
+                        format!("value index {} was not used as part of an instantiation, start function, or export", index),
                         offset,
                     ));
                 }

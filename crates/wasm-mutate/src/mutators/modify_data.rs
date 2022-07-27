@@ -9,6 +9,7 @@ use wasmparser::{DataKind, DataSectionReader};
 /// Mutator that modifies a data segment, either adding or removing bytes.
 #[derive(Clone, Copy)]
 pub struct ModifyDataMutator {
+    /// TODO
     pub max_data_size: usize,
 }
 

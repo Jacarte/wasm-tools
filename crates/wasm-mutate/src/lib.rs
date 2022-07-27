@@ -6,13 +6,13 @@
 //! Wasm parser, validator, compiler, or any other Wasm-consuming
 //! tool. `wasm-mutate` can serve as a custom mutator for mutation-based
 //! fuzzing.
-
+#![allow(missing_docs)]
 #![cfg_attr(not(feature = "clap"), deny(missing_docs))]
 
 mod error;
 mod info;
 mod module;
-mod mutators;
+pub mod mutators;
 
 pub use error::*;
 
@@ -329,7 +329,8 @@ impl<'wasm> WasmMutate<'wasm> {
         Err(Error::no_mutations_applicable())
     }
 
-    fn setup(&mut self, input_wasm: &'wasm [u8]) -> Result<()> {
+    /// TODO
+    pub fn setup(&mut self, input_wasm: &'wasm [u8]) -> Result<()> {
         self.info = Some(ModuleInfo::new(input_wasm)?);
         self.rng = Some(SmallRng::seed_from_u64(self.seed));
         Ok(())
@@ -341,6 +342,11 @@ impl<'wasm> WasmMutate<'wasm> {
 
     pub(crate) fn info(&self) -> &ModuleInfo<'wasm> {
         self.info.as_ref().unwrap()
+    }
+
+    ///
+    pub fn is_some(&self) -> bool { 
+        self.info.is_some()
     }
 
     fn raw_mutate(&mut self, data: &mut Vec<u8>, max_size: usize) -> Result<()> {

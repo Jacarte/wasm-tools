@@ -316,15 +316,15 @@ impl ShrinkRun {
 
             let mut mutate = WasmMutate::default();
             let seed = self.rng.gen();
-            mutate.reduce(true).seed(seed);
-            log::trace!("Attempt #{}: seed: {}", self.attempt, seed);
+            mutate.reduce(true).seed(seed).preserve_semantics(true);
+            log::debug!("Attempt #{}: seed: {}", self.attempt, seed);
 
             let mutations = match mutate.run(&current) {
                 Ok(m) => m,
                 Err(e) => {
                     // This mutation failed, but another randomly chosen
                     // mutation might succeed, so keep attempting.
-                    log::trace!("Attempt #{}: mutation failed ({:?})", self.attempt, e);
+                    log::debug!("Attempt #{}: mutation failed ({:?})", self.attempt, e);
                     continue;
                 }
             };
@@ -338,7 +338,7 @@ impl ShrinkRun {
                 .peekable();
 
             if mutations.peek().is_none() {
-                log::trace!(
+                log::debug!(
                     "Attempt #{}: `wasm-mutate` failed to generate any mutations",
                     self.attempt
                 );
@@ -356,7 +356,7 @@ impl ShrinkRun {
                     Err(e) => {
                         // This mutation failed, but another randomly chosen
                         // mutation might succeed, so keep attempting.
-                        log::trace!("Attempt #{}: mutation failed ({:?})", self.attempt, e);
+                        log::debug!("Attempt #{}: mutation failed ({:?})", self.attempt, e);
                         continue;
                     }
                 };
@@ -367,7 +367,7 @@ impl ShrinkRun {
                     continue;
                 }
 
-                log::trace!(
+                log::debug!(
                     "Attempt #{}: testing candidate ({} bytes)",
                     self.attempt,
                     mutated_wasm.len()
@@ -377,7 +377,7 @@ impl ShrinkRun {
                 if result.is_interesting() {
                     log::trace!("Attempt #{}: candidate is interesting", self.attempt);
                     if self.should_accept(&current, &mutated_wasm) {
-                        log::trace!("Attempt #{}: accepting candidate", self.attempt);
+                        log::debug!("Attempt #{}: accepting candidate", self.attempt);
                         new_current_wasm = Some(mutated_wasm);
                         break;
                     }

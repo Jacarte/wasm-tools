@@ -216,6 +216,9 @@ impl<'a> ModuleInfo<'a> {
                     info.section(SectionId::DataCount.into(), range, input_wasm);
                 }
                 Payload::Version { .. } => {}
+                Payload::TagSection(  .. )  => {
+                    
+                }
                 Payload::End(_) => {
                     break;
                 }
