@@ -673,9 +673,9 @@ impl Mutator for PeepholeMutator {
 
                 println!("{}:{}", fidx, oidx);
 
-                if oidx > 20 {
-                    break  'functions;
-                }
+                //if oidx > 20 {
+                //    break  'functions;
+                //}
 
                 count += 1;
 
@@ -733,6 +733,9 @@ impl Mutator for PeepholeMutator {
                                             meta.insert("orig_tree_unique_nodes".to_string(), format!("{}", or.unique_nodes));
                                             meta.insert("total_trees".to_string(), format!("{}", trees_count));
                                             //meta.insert("orig_tree_count".to_string(), format!("{}", or.nodes_count));
+
+                                            meta.insert("function_index".to_string(), format!("{}", fidx));
+                                            meta.insert("operator_index".to_string(), format!("{}", oidx));
 
                                             let mutationinfo  = MutationMap{
                                                 section: wasm_encoder::SectionId::Code,
