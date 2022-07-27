@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use std::ops::Range;
+use std::{ops::Range, fmt::Write};
 use wasmparser::BlockType;
 
 #[derive(Debug, Default)]
@@ -39,6 +39,69 @@ impl Ast {
     pub fn get_nodes(&self) -> Vec<Node> {
         self.nodes.clone()
     }
+
+    /// Pretty print AST tree
+    pub fn pretty(&self) -> String {
+
+        let mut astrep = String::new();
+        let mut worklist = vec![(self.root, 1)];
+
+        while let Some((r, ident)) = worklist.pop() {
+
+            for _ in 0..ident {
+                astrep.write_str("\t");
+            }
+            let parent = &self.nodes[r];
+
+            match parent {
+                Node::IfElse { consequent, alternative, ty, range } => {
+                    astrep.write_str(&format!("If({r})(ty:{:?}) {}:{}\n", ty, range.start, range.end));
+                    for _ in 0..ident + 1 {
+                        astrep.write_str("\t");
+                    }
+                    astrep.write_str(&format!("then\n"));
+
+                    for &i in consequent {
+                        worklist.push((i, ident + 1));
+                    }
+                    if let Some(alternative) = alternative {
+                     
+                        for _ in 0..ident + 1 {
+                            astrep.write_str("\t");
+                        }
+                        astrep.write_str(&format!("else\n"));
+                        for &i in alternative {
+                            worklist.push((i, ident + 1));
+                        }
+                    }
+                },
+                Node::Code { range } => {
+                    astrep.write_str(&format!("Code({r}) {}:{}", range.start, range.end));
+                 },
+                Node::Loop { body, ty, range } => {
+
+                    astrep.write_str(&format!("Loop({r})(ty:{:?}) {}:{}", ty, range.start, range.end));
+                    for &i in body {
+                        worklist.push((i, ident + 1));
+                    }
+                },
+                Node::Block { body, ty, range } => {
+                    astrep.write_str(&format!("Block({r})(ty:{:?}) {}:{}", ty, range.start, range.end));
+                    for &i in body {
+                        worklist.push((i, ident + 1));
+                    }
+                },
+                Node::Root(body) => {
+                    for &i in body {
+                        worklist.push((i, ident));
+                    }
+                },
+            }
+        }
+
+        astrep
+    }
+
 }
 
 #[derive(Debug, Clone)]

@@ -1,6 +1,6 @@
 //! This mutator selects a random `loop` construction in a function and tries to unroll it.
 //! This mutator only works on empty-returning loops
-use std::{collections::HashMap, slice::Iter};
+use std::{collections::HashMap, slice::Iter, iter::empty};
 
 use rand::prelude::SliceRandom;
 use wasm_encoder::{Function, Instruction, ValType};
@@ -16,7 +16,7 @@ use crate::{
             },
             AstMutator,
         },
-        OperatorAndByteOffset,
+        OperatorAndByteOffset, MutationMap,
     },
     WasmMutate,
 };
@@ -197,6 +197,39 @@ impl AstMutator for LoopUnrollMutator {
     fn can_mutate<'a>(&self, _config: &crate::WasmMutate, ast: &Ast) -> bool {
         let empty_returning_loops = self.get_empty_returning_loops(ast);
         !empty_returning_loops.is_empty()
+    }
+
+
+    /// Checks if this mutator can be applied to the passed `ast`
+    fn get_mutation_info<'a>(&self, fidx: u32, config: &'a crate::WasmMutate, ast: &Ast) -> Option<Vec<MutationMap>> {
+
+        let mut results = vec![];
+        let empty_returning_loops = self.get_empty_returning_loops(ast);
+
+        for empty_returning_loop in empty_returning_loops {
+
+            let targetid: u128 = 0;
+            let targetid = targetid | ((fidx as u128) << 31);
+            let targetid = targetid | empty_returning_loop as u128;
+
+            let mut meta: HashMap<String, String> = HashMap::new();
+            meta.insert("loop_index".to_string(), format!("{}", empty_returning_loop));
+            meta.insert("function_index".to_string(), format!("{}", fidx));
+
+            let info = MutationMap {
+                section: wasm_encoder::SectionId::Code,
+                is_indexed: true,
+                idx: targetid,
+                how: "Unrolls a loop".to_string(),
+                many: 1, // This happens only onece
+                display: Some(ast.pretty()),
+                meta: Some(meta),
+            };
+
+            results.push(info);
+        }
+
+        Some(results)
     }
 
     fn mutate<'a>(

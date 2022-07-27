@@ -731,6 +731,7 @@ impl Mutator for PeepholeMutator {
                                             meta.insert("orig_tree_count".to_string(), format!("{}", or.nodes_count));
                                             meta.insert("orig_tree_height".to_string(), format!("{}", or.tree_height));
                                             meta.insert("orig_tree_unique_nodes".to_string(), format!("{}", or.unique_nodes));
+                                            meta.insert("total_trees".to_string(), format!("{}", trees_count));
                                             //meta.insert("orig_tree_count".to_string(), format!("{}", or.nodes_count));
 
                                             let mutationinfo  = MutationMap{
@@ -738,7 +739,7 @@ impl Mutator for PeepholeMutator {
                                                 is_indexed: true,
                                                 idx: targetid,
                                                 how: format!("Replace ({fidx}:{oidx}:{targetid}) with a subtree of the egraph."),
-                                                many: trees_count, 
+                                                many: 1, 
                                                 meta: Some(meta),
                                                 display: Some(original),
                                             };

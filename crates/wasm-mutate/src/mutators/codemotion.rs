@@ -20,7 +20,7 @@ pub mod ir;
 pub mod loop_unrolling;
 
 use self::ir::parse_context::Ast;
-use super::Mutator;
+use super::{Mutator, MutationMap};
 use crate::{
     module::map_type,
     mutators::{
@@ -128,6 +128,12 @@ pub trait AstMutator {
 
     /// Checks if this mutator can be applied to the passed `ast`
     fn can_mutate<'a>(&self, config: &'a crate::WasmMutate, ast: &Ast) -> bool;
+
+
+    /// Checks if this mutator can be applied to the passed `ast`
+    fn get_mutation_info<'a>(&self, fidx: u32, config: &'a crate::WasmMutate, ast: &Ast) -> Option<Vec<MutationMap>> {
+        None
+    }
 }
 
 /// Meta mutator for peephole
@@ -168,8 +174,51 @@ impl Mutator for CodemotionMutator {
     }
 
     fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32) -> Option<Vec<super::MutationMap>> {
-        // TODO add method to Peephole
-        None
+        let code_section = config.info().get_code_section();
+        let mut sectionreader = CodeSectionReader::new(code_section.data, 0).unwrap();
+        let function_count = sectionreader.get_count();
+
+        let readers = (0..function_count)
+            .map(|_| sectionreader.read().unwrap())
+            .collect::<Vec<_>>();
+        
+        let mut r = vec![];
+        let mut cp = config.clone();
+        // Initialize mutators
+        let mutators: Vec<Box<dyn AstMutator>> = vec![
+            Box::new(IfComplementMutator),
+            Box::new(LoopUnrollMutator), // Add the other here
+        ];
+
+        println!("Getting info for {function_count} functions");
+        'functions: for fidx in 0..function_count {
+            let reader = readers[fidx as usize];
+            let mut operatorreader = reader.get_operators_reader().unwrap();
+            operatorreader.allow_memarg64(true);
+            let operators = operatorreader
+                .into_iter_with_offsets()
+                .collect::<wasmparser::Result<Vec<OperatorAndByteOffset>>>().unwrap();
+
+            // build Ast
+            let ast = AstBuilder.build_ast(&operators);
+
+            match ast {
+                Err(e) => {
+                    println!("AST could not be constructed {}", e);
+                }
+                Ok (ast) => {
+
+                    for m in &mutators {
+                        
+                        let mut partial = m.get_mutation_info(fidx, config, &ast).unwrap_or(vec![]);
+                        r.append(&mut partial);
+                    }
+
+                }
+            }
+        }
+
+        Some(r)
     }
 
 }

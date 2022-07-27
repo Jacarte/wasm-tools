@@ -2,6 +2,8 @@
 //! Since this mutator preserves the original semantic of the input Wasm,
 //! before the mutated if structure is encoded, a "negation" of the previous operand
 //! in the stack is written. The "negation" is encoded with a `i32.eqz` operator.
+use std::collections::HashMap;
+
 use rand::prelude::SliceRandom;
 use wasm_encoder::{Function, Instruction, ValType};
 
@@ -12,7 +14,7 @@ use crate::{
             ir::{parse_context::Ast, AstWriter},
             AstMutator,
         },
-        OperatorAndByteOffset,
+        OperatorAndByteOffset, MutationMap,
     },
     WasmMutate,
 };
@@ -108,7 +110,38 @@ impl AstMutator for IfComplementMutator {
     fn can_mutate<'a>(&self, _: &crate::WasmMutate, ast: &Ast) -> bool {
         ast.has_if()
     }
+    
+    /// Checks if this mutator can be applied to the passed `ast`
+    fn get_mutation_info<'a>(&self, fidx: u32, config: &'a crate::WasmMutate, ast: &Ast) -> Option<Vec<MutationMap>> {
 
+        let mut results = vec![];
+        let ifs = ast.get_ifs();
+
+        for &if_ in ifs {
+
+            let targetid: u128 = 0;
+            let targetid = targetid | ((fidx as u128) << 31);
+            let targetid = targetid | if_ as u128;
+
+            let mut meta: HashMap<String, String> = HashMap::new();
+            meta.insert("if_index".to_string(), format!("{}", if_));
+            meta.insert("function_index".to_string(), format!("{}", fidx));
+
+            let info = MutationMap {
+                section: wasm_encoder::SectionId::Code,
+                is_indexed: true,
+                idx: targetid,
+                how: "Invert If construction".to_string(),
+                many: 1, // This happens only onece
+                display: Some(ast.pretty()),
+                meta: Some(meta),
+            };
+
+            results.push(info);
+        }
+
+        Some(results)
+    }
     fn mutate<'a>(
         &self,
         config: &'a mut WasmMutate,
