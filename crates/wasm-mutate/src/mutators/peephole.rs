@@ -36,11 +36,11 @@ use self::{
 use super::{Mutator, OperatorAndByteOffset};
 use crate::{
     module::{map_type, PrimitiveTypeInfo},
-    Error, ModuleInfo, Result, WasmMutate,
+    Error, ModuleInfo, Result, WasmMutate, ErrorKind, mutators::{peephole::eggsy::expr_enumerator::lazy_expand_aux_sequential, MutationMap},
 };
 use egg::{Rewrite, Runner};
 use rand::{prelude::SmallRng, Rng};
-use std::ops::Range;
+use std::{ops::Range, collections::HashMap};
 use std::{borrow::Cow, fmt::Debug};
 use wasm_encoder::{CodeSection, Function, GlobalSection, Instruction, Module, ValType};
 use wasmparser::{CodeSectionReader, FunctionBody, GlobalSectionReader, LocalsReader};
@@ -126,7 +126,7 @@ impl PeepholeMutator {
         let code_section = config.info().get_code_section();
         let mut sectionreader = CodeSectionReader::new(code_section.data, 0)?;
         let function_count = sectionreader.get_count();
-        let mut function_to_mutate = config.rng().gen_range(0..function_count);
+        let mut function_to_mutate = config.rng().gen_range(0..function_count); // Replace by read from map fidx
 
         let mut visited_functions = 0;
 
@@ -148,7 +148,7 @@ impl PeepholeMutator {
                 .collect::<wasmparser::Result<Vec<OperatorAndByteOffset>>>()?;
             let operatorscount = operators.len();
 
-            let mut opcode_to_mutate = config.rng().gen_range(0..operatorscount);
+            let mut opcode_to_mutate = config.rng().gen_range(0..operatorscount); // Replace by read from map fidx
             log::trace!(
                 "Selecting operator {}/{} from function {}",
                 opcode_to_mutate,
@@ -421,6 +421,141 @@ impl PeepholeMutator {
         }
     }
 
+
+    fn get_mutation_info_for_instruction<'a>(
+        self,
+        config: &'a mut WasmMutate,
+        fidx: u32,
+        oidx: usize,
+        max_trees: usize,
+        rules: &[Rewrite<Lang, PeepholeMutationAnalysis>],
+    ) -> Result<Box<dyn Iterator<Item = Result<(String, String)>> + 'a>> {
+        let code_section = config.info().get_code_section();
+        let mut sectionreader = CodeSectionReader::new(code_section.data, 0)?;
+        let function_count = sectionreader.get_count();
+        let mut function_to_mutate = fidx;
+
+        let readers = (0..function_count)
+            .map(|_| sectionreader.read().unwrap())
+            .collect::<Vec<_>>();
+
+        let reader = readers[function_to_mutate as usize];
+        let mut operatorreader = reader.get_operators_reader()?;
+        operatorreader.allow_memarg64(true);
+        let mut localsreader = reader.get_locals_reader()?;
+        let operators = operatorreader
+            .into_iter_with_offsets()
+            .collect::<wasmparser::Result<Vec<OperatorAndByteOffset>>>()?;
+
+        let mut opcode_to_mutate = oidx; // Replace by read from map fidx
+        log::trace!(
+            "Selecting operator {} from function {}",
+            opcode_to_mutate,
+            function_to_mutate,
+        );
+        let locals = self.get_func_locals(
+            config.info(),
+            function_to_mutate + config.info().num_imported_functions(), /* the function type is shifted
+                                                                        by the imported functions*/
+            &mut localsreader,
+        )?;
+        let mut count = 0;
+        
+        let mut dfg = DFGBuilder::new(config);
+        let basicblock = dfg.get_bb_from_operator(opcode_to_mutate, &operators);
+
+        let basicblock = match basicblock {
+            None => {
+                log::trace!(
+                    "Basic block cannot be constructed for opcode {:?}",
+                    &operators[opcode_to_mutate]
+                );
+                return Err(Error::no_mutations_applicable());;
+            }
+            Some(basicblock) => basicblock,
+        };
+        let minidfg = dfg.get_dfg(config.info(), &operators, &basicblock);
+
+        let minidfg = match minidfg {
+            None => {
+                log::trace!("DFG cannot be constructed for opcode {}", opcode_to_mutate);
+                return Err(Error::no_mutations_applicable());;
+            }
+            Some(minidfg) => minidfg,
+        };
+
+        if !minidfg.map.contains_key(&opcode_to_mutate) {
+            return Err(Error::no_mutations_applicable());;
+        }
+
+        // Create an eterm expression from the basic block starting at oidx
+        let start = minidfg.get_expr(opcode_to_mutate);
+
+        if !minidfg.is_subtree_consistent_from_root() {
+            log::trace!("{} is not consistent", start);
+            return Err(Error::no_mutations_applicable());
+        };
+
+        log::trace!(
+            "Trying to mutate\n\
+                {}\n\
+                at opcode {} in function {}",
+            start.pretty(30).trim(),
+            opcode_to_mutate,
+            function_to_mutate,
+        );
+
+        let analysis = PeepholeMutationAnalysis::new(config.info(), locals.clone());
+        let runner = Runner::<Lang, PeepholeMutationAnalysis, ()>::new(analysis)
+            .with_iter_limit(1) // FIXME, the iterations should consume fuel from the actual mutator. Be careful with inner set time limits that can lead us to non-deterministic behavior
+            .with_expr(&start)
+            .run(rules);
+        let mut egraph = runner.egraph;
+        // In theory this will return the Id of the operator eterm
+        let root = egraph.add_expr(&start);
+        let startcmp = start.clone();
+        // Since this construction is expensive then more fuel is consumed
+        let config4fuel = config.clone();
+
+        // If the number of nodes in the egraph is not large, then
+        // continue the search
+        if egraph.total_number_of_nodes() <= 1 {
+            return Err(Error::no_mutations_applicable());
+        };
+
+        log::trace!(
+            "Egraph built, nodes count = {}",
+            egraph.total_number_of_nodes()
+        );
+
+        // If reduction mode is requested then yield back the smallest
+        // graph to start off with. For reduction cases that are
+        // specifically trying to find an interesting test case though
+        // the first reduction may not be interesting, so continue to
+        // chain up the lazy expansions afterwards like we always do.
+        let iter = {
+            None.into_iter()
+        };
+
+        let iter = iter.chain(lazy_expand_aux_sequential(
+            root,
+            egraph.clone(),
+            self.max_tree_depth 
+        ));
+
+        // Filter expression equal to the original one
+        let iterator = iter
+            .filter(move |expr| !expr.to_string().eq(&startcmp.to_string()))
+            .map(move |expr| {
+
+                Ok((start.pretty(60), expr.pretty(60)))
+            })
+            // Read subtrees until max_trees, if max_trees is reached, then this has "infinite" possible mutations up to egraph size S
+            .take(max_trees);
+
+        return Ok(Box::new(iterator));
+    }
+
     /// To separate the methods will allow us to test rule by rule
     fn mutate_with_rules<'a>(
         self,
@@ -429,6 +564,7 @@ impl PeepholeMutator {
     ) -> Result<Box<dyn Iterator<Item = Result<Module>> + 'a>> {
         self.random_mutate(config, rules)
     }
+
 }
 
 /// Meta mutator for peephole
@@ -451,6 +587,134 @@ impl Mutator for PeepholeMutator {
 
     fn can_mutate<'a>(&self, config: &'a WasmMutate) -> bool {
         config.info().has_code() && config.info().num_local_functions() > 0
+    }
+
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32) -> Option<Vec<super::MutationMap>> {
+        // TODO add method to Peephole
+        let rules = match self.rules.clone() {
+            Some(rules) => rules,
+            // Calculate here type related information for parameters, locals and returns
+            // This information could be passed to the conditions to check for type correctness rewriting
+            // Write the new rules in the rules.rs file
+            None => self.get_rules(config),
+        };
+
+
+        let code_section = config.info().get_code_section();
+        let mut sectionreader = CodeSectionReader::new(code_section.data, 0).unwrap();
+        let function_count = sectionreader.get_count();
+
+        let readers = (0..function_count)
+            .map(|_| sectionreader.read().unwrap())
+            .collect::<Vec<_>>();
+        
+        let mut r = vec![];
+        let mut cp = config.clone();
+
+        println!("Getting info for {function_count} functions");
+        'functions: for fidx in 0..function_count {
+            let reader = readers[fidx as usize];
+            let mut operatorreader = reader.get_operators_reader().unwrap();
+            operatorreader.allow_memarg64(true);
+            let mut localsreader = reader.get_locals_reader().unwrap();
+            let operators = operatorreader
+                .into_iter_with_offsets()
+                .collect::<wasmparser::Result<Vec<OperatorAndByteOffset>>>().unwrap();
+            let operatorscount = operators.len();
+
+            let mut count = 0;
+            for oidx in 0..operatorscount {
+
+                println!("{}:{}", fidx, oidx);
+
+                if oidx > 20 {
+                    break  'functions;
+                }
+                
+                count += 1;
+
+                if count % 99 == 0{
+                    println!("{}/{}", count, function_count*operatorscount as u32)
+                }
+
+                let selfcp = self.clone();
+                let infos = selfcp.get_mutation_info_for_instruction(&mut cp, fidx, oidx, 1000, &rules );
+                match infos {
+                    Err(e) => {
+                        match e.kind() {
+                            ErrorKind::NoMutationsApplicable => {
+                                // continue, this instruction can not be mutated
+                                println!("No mutation applicable {fidx}:{oidx}");
+                                continue;
+                            }
+                            _ => {
+                                println!("{e}");
+                            }
+                        }
+
+                    }
+                    Ok(ite) => {
+
+                        if deeplevel > 1 {
+                            let mut trees_count = -1;
+                            let mut original = "".to_string();
+
+                            let targetid: u128 = 0;
+                            let targetid = targetid | ((fidx as u128) << 31);
+                            let targetid = targetid | oidx as u128;
+
+                            if deeplevel > 2 {
+                                trees_count = 0;
+                                for s in ite {
+                                    // do nothing, to see expressions
+                                    match s {
+                                        Err(e) => {
+                                            println!("{e}")
+                                        }
+                                        Ok((or, new)) => {
+                                            original=or;
+                                            trees_count += 1;
+
+                                            let mut meta: HashMap<String, String> = HashMap::new();
+                                            meta.insert("new_tree_display".to_string(), new);
+
+                                            let mutationinfo  = MutationMap{
+                                                section: wasm_encoder::SectionId::Code,
+                                                is_indexed: true,
+                                                idx: targetid,
+                                                how: format!("Replace ({fidx}:{oidx}:{targetid}) with a subtree of the egraph."),
+                                                many: trees_count, 
+                                                meta: Some(meta),
+                                                display: Some(original),
+                                            };
+                                            r.push(mutationinfo);
+                                            // TODO, save the trees expressions, for later deterministic tree replacement
+                                        }
+                                    }
+                                }
+                            } else {
+
+                                let mutationinfo  = MutationMap{
+                                    section: wasm_encoder::SectionId::Code,
+                                    is_indexed: true,
+                                    idx: targetid,
+                                    how: format!("Replace ({fidx}:{oidx}:{targetid}) with a subtree of the egraph."),
+                                    many: trees_count,
+                                    display: Some(original), meta: None
+                                };
+                                r.push(mutationinfo);
+                            }
+                        }
+                    }   
+                }
+            }
+
+
+            //break 'functions;
+
+        }
+
+        Some(r)
     }
 }
 

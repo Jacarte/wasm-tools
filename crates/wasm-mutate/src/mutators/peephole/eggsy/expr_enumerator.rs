@@ -62,7 +62,7 @@ pub fn lazy_expand<'a>(
     let nodes = egraph[id].nodes.clone();
     let count = nodes.len();
     // For each eclass, at least one node exists
-    let split_at = rnd.borrow_mut().gen_range(0..count);
+    let split_at = rnd.borrow_mut().gen_range(0..count); //  TODO, replace by concrete index in the eclass nodes
     let indices = (split_at..count).into_iter().chain(0..split_at);
 
     let t = indices
@@ -177,6 +177,135 @@ pub fn lazy_expand_aux<'a>(
 
     Box::new(it)
 }
+
+pub fn lazy_expand2<'a>(
+    id: Id,
+    egraph: Rc<EG>,
+    depth: u32,
+    recexpr: Rc<RefCell<RecExpr<Lang>>>,
+) -> Box<dyn Iterator<Item = Id> + 'a> {
+    if depth == 0 {
+        let cf = AstSize;
+        let extractor = RandomExtractor::new(&egraph, cf);
+        let shorter = extractor
+            .extract_smallest(id, &recexpr, |a, b, c| build_expr_inner(a, b, c))
+            .unwrap();
+
+        return Box::new(vec![shorter].into_iter());
+    }
+
+    let nodes = egraph[id].nodes.clone();
+    let count = nodes.len();
+    // For each eclass, at least one node exists
+    let split_at = 0; //  TODO, replace by concrete index in the eclass nodes
+    let indices = (split_at..count).into_iter().chain(0..split_at);
+
+    let t = indices
+        .map(move |i| nodes[i].clone())
+        .map(move |mut l| {
+            let depth = match l {
+                // This is a patch to avoid expansion of non-statically known
+                // values.
+                Lang::UnfoldI32(_) | Lang::UnfoldI64(_) => 0,
+                _ => depth - 1,
+            };
+            let children = l.children_mut();
+            let rec = recexpr.clone();
+            let iter: Box<dyn Iterator<Item = Id>> = match children.len() {
+                // Without any child nodes we can simply add this `Lang` value
+                // and move on.
+                0 => Box::new(std::iter::once(recexpr.borrow_mut().add(l))),
+
+                // With one child node we try to update the current node with
+                // all possible expansions of the child node.
+                1 => Box::new(
+                    lazy_expand2(
+                        children[0],
+                        egraph.clone(),
+                        depth,
+                        recexpr.clone(),
+                    )
+                    .map(move |id| {
+                        let mut l = l.clone();
+                        l.children_mut()[0] = id;
+                        rec.clone().borrow_mut().add(l)
+                    }),
+                ),
+
+                // With two child nodes a cartesian product of expansions is
+                // attempted.
+                2 => {
+                    let rec = recexpr.clone();
+                    let egraph = egraph.clone();
+                    let recexpr = recexpr.clone();
+                    let left = children[0];
+                    let right = children[1];
+                    Box::new(
+                        lazy_expand2(left, egraph.clone(), depth, recexpr.clone())
+                            .flat_map(move |e| {
+                                std::iter::repeat(e).zip(lazy_expand2(
+                                    right,
+                                    egraph.clone(),
+                                    depth,
+                                    recexpr.clone(),
+                                ))
+                            })
+                            .map(move |(left, right)| {
+                                let mut l = l.clone();
+                                l.children_mut()[0] = left;
+                                l.children_mut()[1] = right;
+                                rec.borrow_mut().add(l)
+                            }),
+                    )
+                }
+
+                // FIXME I could not find a way to have a cartesian product of
+                // dynamic size collection of Iterators This can also be solved
+                // if we turn Call and Container enodes to be binary trees where
+                // the left operand is a real Id and the second is a container,
+                // and so on until all arguments are expressed in the binary
+                // tree For example
+                // (call.$1 a b c d) can be turned into (call.$1 a (container b (container c (container d)))))
+                _ => {
+                    for child in children {
+                        *child = lazy_expand2(
+                            *child,
+                            egraph.clone(),
+                            depth,
+                            recexpr.clone(),
+                        )
+                        .next()
+                        .unwrap();
+                    }
+                    Box::new(std::iter::once(recexpr.borrow_mut().add(l)))
+                }
+            };
+            iter
+        })
+        .flatten();
+    Box::new(t)
+}
+
+/// Lazy expand helper 2
+pub fn lazy_expand_aux_sequential<'a>(
+    id: Id,
+    egraph: EG,
+    depth: u32
+) -> Box<dyn Iterator<Item = RecExpr<Lang>> + 'a> {
+    let expr_buffer = RecExpr::default();
+    let recexpr = Rc::new(RefCell::new(expr_buffer));
+    // FIXME,
+    let recexprcp = recexpr.clone();
+    let recexprcp2 = recexpr;
+    let eg = Rc::new(egraph);
+    let it = lazy_expand2(id, eg, depth, recexprcp).map(move |_id| {
+        let expr = RecExpr::from(recexprcp2.borrow().as_ref().to_vec());
+        expr
+    });
+
+    Box::new(it)
+}
+
 
 #[cfg(test)]
 mod tests {

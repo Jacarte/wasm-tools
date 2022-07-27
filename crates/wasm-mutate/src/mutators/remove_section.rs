@@ -49,7 +49,7 @@ impl Mutator for RemoveSection {
         }
     }
 
-    fn get_mutation_info(&self, config: &WasmMutate) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32) -> Option<Vec<super::MutationMap>> {
         let mut r = vec![];
 
         let removal_candidates = config
@@ -68,8 +68,8 @@ impl Mutator for RemoveSection {
             r.push(MutationMap { 
                 section: SectionId::Custom, 
                 // It is indexed regarding all sections
-                is_indexed: true, idx, how: "Remove custom section".to_string(), 
-                many: 1, display: None });
+                is_indexed: true, idx:  idx as u128, how: "Remove custom section".to_string(), 
+                many: 1, display: None, meta: None });
         }
 
         Some(r)

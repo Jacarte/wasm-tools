@@ -40,7 +40,7 @@ mod translate;
 pub use self::translate::Item;
 use self::translate::{DefaultTranslator, Translator};
 
-use std::borrow::Cow;
+use std::{borrow::Cow, collections::HashMap};
 
 use super::Result;
 use crate::WasmMutate;
@@ -57,7 +57,7 @@ pub struct MutationMap {
     pub is_indexed: bool,
 
     /// Index of the element, if indexed, otherwise its offset in the binary
-    pub idx: usize,
+    pub idx: u128,
 
     /// Natural description of how the mutation can be applide, e.g. for the custom, if it is the name or the data part
     pub how: String,
@@ -66,7 +66,10 @@ pub struct MutationMap {
     pub many: i64,
 
     /// Display of the target, None if it is not relevant
-    pub display: Option<String>
+    pub display: Option<String>,
+
+    /// Map for arbitrary metadata information
+    pub meta: Option<HashMap<String,String>>,
 }
 
 /// A mutation that can be applied to a Wasm module to produce a new, mutated
@@ -92,7 +95,7 @@ pub trait Mutator {
 
     /// Provides mutation map, to which parts of the target it can be applied, e.g. to function idx I
     /// The cb function should take: the section to which is can be applied, the index of the element it its corresponding index, how the mutation can be applied, e.g. changing name or chanding data, and how many mutations are possible (-1 if infinite)
-    fn get_mutation_info(&self, config: &WasmMutate) -> Option<Vec<MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32) -> Option<Vec<MutationMap>> {
         None
     }
 

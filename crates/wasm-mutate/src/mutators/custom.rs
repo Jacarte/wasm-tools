@@ -13,7 +13,7 @@ impl Mutator for CustomSectionMutator {
         config.info().has_custom_section()
     }
 
-    fn get_mutation_info(&self, config: &crate::WasmMutate) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &crate::WasmMutate, deeplevel: u32) -> Option<Vec<super::MutationMap>> {
 
         let mut r = vec![];
 
@@ -30,14 +30,14 @@ impl Mutator for CustomSectionMutator {
             r.push(MutationMap { 
                 section: SectionId::Custom, 
                 // It is indexed regarding all sections
-                is_indexed: true, idx, how: "Change the name of the custom section. Infinite ways to do so".to_string(), 
-                many: -1, display: None });
+                is_indexed: true, idx:  idx as u128, how: "Change the name of the custom section. Infinite ways to do so".to_string(), 
+                many: -1, display: None, meta: None });
             r.push(MutationMap { 
                 section: SectionId::Custom, 
                 // It is indexed regarding all sections
-                is_indexed: true, idx, how: "Change the data of the custom section. Infinite ways to do so".to_string(), 
+                is_indexed: true, idx:  idx as u128, how: "Change the data of the custom section. Infinite ways to do so".to_string(), 
                 many: -1,
-                display: None, })
+                display: None, meta: None })
         }
 
         Some(r)

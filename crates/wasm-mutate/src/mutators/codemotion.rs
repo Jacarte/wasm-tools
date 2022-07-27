@@ -166,6 +166,12 @@ impl Mutator for CodemotionMutator {
     fn can_mutate<'a>(&self, config: &'a WasmMutate) -> bool {
         config.info().has_code() && config.info().num_local_functions() > 0
     }
+
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32) -> Option<Vec<super::MutationMap>> {
+        // TODO add method to Peephole
+        None
+    }
+
 }
 
 #[cfg(test)]
