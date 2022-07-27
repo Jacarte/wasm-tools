@@ -429,7 +429,7 @@ impl PeepholeMutator {
         oidx: usize,
         max_trees: usize,
         rules: &[Rewrite<Lang, PeepholeMutationAnalysis>],
-    ) -> Result<Box<dyn Iterator<Item = Result<(TreeInfo, TreeInfo)>> + 'a>> {
+    ) -> Result<(EG, Box<dyn Iterator<Item = Result<(TreeInfo, TreeInfo)>> + 'a>)> {
         let code_section = config.info().get_code_section();
         let mut sectionreader = CodeSectionReader::new(code_section.data, 0)?;
         let function_count = sectionreader.get_count();
@@ -554,7 +554,7 @@ impl PeepholeMutator {
             // Read subtrees until max_trees, if max_trees is reached, then this has "infinite" possible mutations up to egraph size S
             .take(max_trees);
 
-        return Ok(Box::new(iterator));
+        return Ok((egraph.clone(), Box::new(iterator)));
     }
 
     /// To separate the methods will allow us to test rule by rule
@@ -699,7 +699,7 @@ impl Mutator for PeepholeMutator {
                         }
 
                     }
-                    Ok(ite) => {
+                    Ok((eg, ite)) => {
 
                         if deeplevel > 1 {
                             let mut trees_count = -1;
@@ -755,7 +755,8 @@ impl Mutator for PeepholeMutator {
                                     idx: targetid,
                                     how: format!("Replace ({fidx}:{oidx}:{targetid}) with a subtree of the egraph."),
                                     many: trees_count,
-                                    display: Some(original), meta: None
+                                    display: Some(format!("{:?}", eg)), // See how this can be serialized
+                                    meta: None
                                 };
                                 r.push(mutationinfo);
                             }
