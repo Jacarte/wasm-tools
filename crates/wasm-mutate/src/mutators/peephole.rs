@@ -673,6 +673,10 @@ impl Mutator for PeepholeMutator {
             if operatorscount < sample_ratio as usize {
                 // Select at least the 1% of the operators
                 pob = 1.0/(operatorscount as f32);
+                println!("pob {}", pob);
+            } else {
+                pob = 1.0/(sample_ratio as f32);
+                println!("pob {}", pob);
             }
 
             let mut count = 0;
@@ -687,7 +691,7 @@ impl Mutator for PeepholeMutator {
                 }
                 count += 1;
 
-                if count % 99 == 0{
+                if count % 10 == 0{
                     print!("\r{}/{}({:.2}%)                                            ", count, operatorscount as u32,  100.0*count as f32/(operatorscount as f32))
                 }
 
