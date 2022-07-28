@@ -658,7 +658,8 @@ impl Mutator for PeepholeMutator {
         let mut cp = config.clone();
 
         println!("Getting info for {function_count} functions");
-        let pob = 1.0/sample_ratio as f32;
+        let pob = 1.0/(sample_ratio as f32);
+        println!("pob {}", pob);
 
         'functions: for fidx in 0..function_count {
             let reader = readers[fidx as usize];
