@@ -673,7 +673,7 @@ impl Mutator for PeepholeMutator {
                 count += 1;
 
                 if count % 99 == 0{
-                    println!("{}/{}", count, function_count*operatorscount as u32)
+                    println!("{}/{}                                             ", count, function_count*operatorscount as u32)
                 }
 
                 let selfcp = self.clone();
@@ -683,7 +683,7 @@ impl Mutator for PeepholeMutator {
                         match e.kind() {
                             ErrorKind::NoMutationsApplicable => {
                                 // continue, this instruction can not be mutated
-                                println!("No mutation applicable {fidx}:{oidx}");
+                                println!("\rNo mutation applicable {fidx}:{oidx}                  ");
                                 continue;
                             }
                             _ => {
