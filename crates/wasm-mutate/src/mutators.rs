@@ -95,7 +95,7 @@ pub trait Mutator {
 
     /// Provides mutation map, to which parts of the target it can be applied, e.g. to function idx I
     /// The cb function should take: the section to which is can be applied, the index of the element it its corresponding index, how the mutation can be applied, e.g. changing name or chanding data, and how many mutations are possible (-1 if infinite)
-    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32) -> Option<Vec<MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<MutationMap>> {
         None
     }
 

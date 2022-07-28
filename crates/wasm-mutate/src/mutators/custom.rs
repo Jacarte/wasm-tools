@@ -13,7 +13,7 @@ impl Mutator for CustomSectionMutator {
         config.info().has_custom_section()
     }
 
-    fn get_mutation_info(&self, config: &crate::WasmMutate, deeplevel: u32) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &crate::WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
 
         let mut r = vec![];
 

@@ -39,7 +39,7 @@ use crate::{
     Error, ModuleInfo, Result, WasmMutate, ErrorKind, mutators::{peephole::eggsy::expr_enumerator::lazy_expand_aux_sequential, MutationMap},
 };
 use egg::{Rewrite, Runner, RecExpr, Language};
-use rand::{prelude::SmallRng, Rng};
+use rand::{prelude::SmallRng, Rng, SeedableRng};
 use std::{ops::Range, collections::HashMap, hash::Hash, cmp::max};
 use std::{borrow::Cow, fmt::Debug};
 use wasm_encoder::{CodeSection, Function, GlobalSection, Instruction, Module, ValType};
@@ -635,7 +635,7 @@ impl Mutator for PeepholeMutator {
         config.info().has_code() && config.info().num_local_functions() > 0
     }
 
-    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
         // TODO add method to Peephole
         let rules = match self.rules.clone() {
             Some(rules) => rules,
@@ -658,6 +658,8 @@ impl Mutator for PeepholeMutator {
         let mut cp = config.clone();
 
         println!("Getting info for {function_count} functions");
+        let pob = 1.0/sample_ratio as f32;
+
         'functions: for fidx in 0..function_count {
             let reader = readers[fidx as usize];
             let mut operatorreader = reader.get_operators_reader().unwrap();
@@ -668,9 +670,16 @@ impl Mutator for PeepholeMutator {
             let operatorscount = operators.len();
 
             let mut count = 0;
+            let mut gen = SmallRng::seed_from_u64(seed);
+
             println!();
             for oidx in 0..operatorscount {
                 count += 1;
+                let (newpob, _) = gen.gen::<(f32, bool)>();
+
+                if newpob > pob {
+                    continue;
+                }
 
                 if count % 99 == 0{
                     print!("\r{}/{}({:.2}%)                                            ", count, operatorscount as u32,  100.0*count as f32/(operatorscount as f32))

@@ -173,7 +173,7 @@ impl Mutator for CodemotionMutator {
         config.info().has_code() && config.info().num_local_functions() > 0
     }
 
-    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
         let code_section = config.info().get_code_section();
         let mut sectionreader = CodeSectionReader::new(code_section.data, 0).unwrap();
         let function_count = sectionreader.get_count();
