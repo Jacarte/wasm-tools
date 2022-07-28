@@ -750,7 +750,9 @@ impl Mutator for PeepholeMutator {
 
                                 let mut meta: HashMap<String, String> = HashMap::new();
                                 meta.insert("operators_count".to_string(), format!("{}", operatorscount));
-                                
+                                meta.insert("function_index".to_string(), format!("{}", fidx));
+                                meta.insert("operator_index".to_string(), format!("{}", oidx));
+
                                 let mutationinfo  = MutationMap{
                                     section: wasm_encoder::SectionId::Code,
                                     is_indexed: true,
