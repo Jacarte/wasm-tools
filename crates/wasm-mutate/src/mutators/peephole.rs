@@ -662,7 +662,6 @@ impl Mutator for PeepholeMutator {
             let reader = readers[fidx as usize];
             let mut operatorreader = reader.get_operators_reader().unwrap();
             operatorreader.allow_memarg64(true);
-            let mut localsreader = reader.get_locals_reader().unwrap();
             let operators = operatorreader
                 .into_iter_with_offsets()
                 .collect::<wasmparser::Result<Vec<OperatorAndByteOffset>>>().unwrap();
@@ -673,7 +672,7 @@ impl Mutator for PeepholeMutator {
                 count += 1;
 
                 if count % 99 == 0{
-                    println!("{}/{}                                             ", count, function_count*operatorscount as u32)
+                    println!("{}/{}({:.2}%)                                            ", count, operatorscount as u32,  100.0*count as f32/(operatorscount as f32))
                 }
 
                 let selfcp = self.clone();
