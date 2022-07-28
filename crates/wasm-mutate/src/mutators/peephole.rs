@@ -658,7 +658,7 @@ impl Mutator for PeepholeMutator {
         let mut cp = config.clone();
 
         println!("Getting info for {function_count} functions");
-        let pob = 1.0/(sample_ratio as f32);
+        let mut pob = 1.0/(sample_ratio as f32);
         println!("pob {}", pob);
 
         'functions: for fidx in 0..function_count {
@@ -669,6 +669,11 @@ impl Mutator for PeepholeMutator {
                 .into_iter_with_offsets()
                 .collect::<wasmparser::Result<Vec<OperatorAndByteOffset>>>().unwrap();
             let operatorscount = operators.len();
+
+            if operatorscount < sample_ratio as usize {
+                // Select at least the 1% of the operators
+                pob = 1.0/(operatorscount as f32);
+            }
 
             let mut count = 0;
             let mut gen = SmallRng::seed_from_u64(seed);
