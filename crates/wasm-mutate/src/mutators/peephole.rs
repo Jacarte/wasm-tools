@@ -670,13 +670,6 @@ impl Mutator for PeepholeMutator {
 
             let mut count = 0;
             for oidx in 0..operatorscount {
-
-                println!("{}:{}", fidx, oidx);
-
-                //if oidx > 20 {
-                //    break  'functions;
-                //}
-
                 count += 1;
 
                 if count % 99 == 0{
