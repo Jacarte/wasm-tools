@@ -683,7 +683,7 @@ impl Mutator for PeepholeMutator {
                         match e.kind() {
                             ErrorKind::NoMutationsApplicable => {
                                 // continue, this instruction can not be mutated
-                                println!("\rNo mutation applicable {fidx}:{oidx}                  ");
+                                // println!("\rNo mutation applicable {fidx}:{oidx}                  ");
                                 continue;
                             }
                             _ => {
