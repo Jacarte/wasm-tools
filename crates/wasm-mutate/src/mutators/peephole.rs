@@ -674,12 +674,12 @@ impl Mutator for PeepholeMutator {
 
             println!();
             for oidx in 0..operatorscount {
-                count += 1;
                 let (newpob, _) = gen.gen::<(f32, bool)>();
 
                 if newpob > pob {
                     continue;
                 }
+                count += 1;
 
                 if count % 99 == 0{
                     print!("\r{}/{}({:.2}%)                                            ", count, operatorscount as u32,  100.0*count as f32/(operatorscount as f32))
@@ -780,6 +780,8 @@ impl Mutator for PeepholeMutator {
 
 
             //break 'functions;
+            print!("\r{}/{}({:.2}%)                                            ", count, operatorscount as u32,  100.0*count as f32/(operatorscount as f32))
+
 
         }
 
