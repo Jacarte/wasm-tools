@@ -668,11 +668,12 @@ impl Mutator for PeepholeMutator {
             let operatorscount = operators.len();
 
             let mut count = 0;
+            println!();
             for oidx in 0..operatorscount {
                 count += 1;
 
                 if count % 99 == 0{
-                    println!("{}/{}({:.2}%)                                            ", count, operatorscount as u32,  100.0*count as f32/(operatorscount as f32))
+                    print!("\r{}/{}({:.2}%)                                            ", count, operatorscount as u32,  100.0*count as f32/(operatorscount as f32))
                 }
 
                 let selfcp = self.clone();
@@ -729,6 +730,7 @@ impl Mutator for PeepholeMutator {
                                             meta.insert("function_index".to_string(), format!("{}", fidx));
                                             meta.insert("operator_index".to_string(), format!("{}", oidx));
                                             meta.insert("iteration_index".to_string(), format!("{}", index));
+                                            meta.insert("operators_count".to_string(), format!("{}", operatorscount));
 
                                             let mutationinfo  = MutationMap{
                                                 section: wasm_encoder::SectionId::Code,
