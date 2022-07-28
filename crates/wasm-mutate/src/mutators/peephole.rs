@@ -748,6 +748,9 @@ impl Mutator for PeepholeMutator {
                                 }
                             } else {
 
+                                let mut meta: HashMap<String, String> = HashMap::new();
+                                meta.insert("operators_count".to_string(), format!("{}", operatorscount));
+                                
                                 let mutationinfo  = MutationMap{
                                     section: wasm_encoder::SectionId::Code,
                                     is_indexed: true,
@@ -755,7 +758,7 @@ impl Mutator for PeepholeMutator {
                                     how: format!("Replace ({fidx}:{oidx}:{targetid}) with a subtree of the egraph."),
                                     many: trees_count,
                                     display: Some(format!("{:?}", eg)), // See how this can be serialized
-                                    meta: None
+                                    meta: Some(meta)
                                 };
                                 r.push(mutationinfo);
                             }
