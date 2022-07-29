@@ -429,7 +429,7 @@ impl PeepholeMutator {
         oidx: usize,
         max_trees: usize,
         rules: &[Rewrite<Lang, PeepholeMutationAnalysis>],
-    ) -> Result<(EG, Box<dyn Iterator<Item = Result<(TreeInfo, TreeInfo)>> + 'a>)> {
+    ) -> Result<(EG, TreeInfo, Box<dyn Iterator<Item = Result<(TreeInfo, TreeInfo)>> + 'a>)> {
         let code_section = config.info().get_code_section();
         let mut sectionreader = CodeSectionReader::new(code_section.data, 0)?;
         let function_count = sectionreader.get_count();
@@ -543,6 +543,7 @@ impl PeepholeMutator {
             self.max_tree_depth 
         ));
 
+        let cp = start.clone();
         // Filter expression equal to the original one
         let iterator = iter
             .filter(move |expr| !expr.to_string().eq(&startcmp.to_string()))
@@ -554,7 +555,7 @@ impl PeepholeMutator {
             // Read subtrees until max_trees, if max_trees is reached, then this has "infinite" possible mutations up to egraph size S
             .take(max_trees);
 
-        return Ok((egraph.clone(), Box::new(iterator)));
+        return Ok((egraph.clone(),TreeInfo::new(cp), Box::new(iterator)));
     }
 
     /// To separate the methods will allow us to test rule by rule
@@ -711,7 +712,7 @@ impl Mutator for PeepholeMutator {
                         }
 
                     }
-                    Ok((eg, ite)) => {
+                    Ok((eg, origtree, ite)) => {
 
                         if deeplevel > 1 {
                             let mut trees_count = -1;
@@ -778,7 +779,7 @@ impl Mutator for PeepholeMutator {
                                     idx: targetid,
                                     how: format!("Replace ({fidx}:{oidx}:{targetid}) with a subtree of the egraph."),
                                     many: trees_count,
-                                    display: Some(format!("{:?}", eg)), // See how this can be serialized
+                                    display: Some(origtree.display), // See how this can be serialized
                                     meta: Some(meta)
                                 };
                                 r.push(mutationinfo);
