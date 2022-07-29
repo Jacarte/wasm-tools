@@ -660,7 +660,7 @@ impl Mutator for PeepholeMutator {
 
         println!("Getting info for {function_count} functions");
         let mut pob = 1.0/(sample_ratio as f32);
-        println!("pob {}", pob);
+        //println!("pob {}", pob);
 
         'functions: for fidx in 0..function_count {
             let reader = readers[fidx as usize];
@@ -674,16 +674,15 @@ impl Mutator for PeepholeMutator {
             if operatorscount < sample_ratio as usize {
                 // Select at least the 1% of the operators
                 pob = 1.0/(operatorscount as f32);
-                println!("pob {}", pob);
+                //println!("pob {}", pob);
             } else {
                 pob = 1.0/(sample_ratio as f32);
-                println!("pob {}", pob);
+                //println!("pob {}", pob);
             }
 
             let mut count = 0;
             let mut gen = SmallRng::seed_from_u64(seed);
 
-            println!();
             for oidx in 0..operatorscount {
                 let (newpob, _) = gen.gen::<(f32, bool)>();
 
@@ -693,7 +692,7 @@ impl Mutator for PeepholeMutator {
                 count += 1;
 
                 if count % 10 == 0{
-                    print!("\r{}/{}({:.2}%)                                            ", count, operatorscount as u32,  100.0*count as f32/(operatorscount as f32))
+                    //print!("\r{}/{}({:.2}%)                                            ", count, operatorscount as u32,  100.0*count as f32/(operatorscount as f32))
                 }
 
                 let selfcp = self.clone();
@@ -772,6 +771,8 @@ impl Mutator for PeepholeMutator {
                                 meta.insert("operators_count".to_string(), format!("{}", operatorscount));
                                 meta.insert("function_index".to_string(), format!("{}", fidx));
                                 meta.insert("operator_index".to_string(), format!("{}", oidx));
+                                meta.insert("egraph_eclass_count".to_string(), format!("{}", eg.number_of_classes()));
+                                meta.insert("egraph_node_count".to_string(), format!("{}", eg.total_number_of_nodes()));
 
                                 let mutationinfo  = MutationMap{
                                     section: wasm_encoder::SectionId::Code,
@@ -791,7 +792,7 @@ impl Mutator for PeepholeMutator {
 
 
             //break 'functions;
-            print!("\r{}/{}({:.2}%)                                            ", count, operatorscount as u32,  100.0*count as f32/(operatorscount as f32))
+            //print!("\r{}/{}({:.2}%)                                            ", count, operatorscount as u32,  100.0*count as f32/(operatorscount as f32))
 
 
         }
