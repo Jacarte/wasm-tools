@@ -756,7 +756,7 @@ impl Mutator for PeepholeMutator {
                                                 section: wasm_encoder::SectionId::Code,
                                                 is_indexed: true,
                                                 idx: targetid,
-                                                how: format!("Replace ({fidx}:{oidx}:{targetid}) with a subtree of the egraph."),
+                                                how: "".into(),
                                                 many: 1, 
                                                 meta: Some(meta),
                                                 display: Some(original),
