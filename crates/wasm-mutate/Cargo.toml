@@ -24,10 +24,11 @@ env_logger = "0.9"
 
 [features]
 default = ["all"]
-all = [ "peep_hole", "code_motion", "function_body_unreachable", "modify_data", "modify_init_exprs", "remove_exports", "remove_section", "rename_exports", "snip_function", "add_function", "add_type", "modify_custom_section", "peep_hole_all", "remove_item_all"]
+all = [ "code_motion", "function_body_unreachable", "modify_data", "modify_init_exprs", "remove_exports", "remove_section", "rename_exports", "snip_function", "add_function", "add_type", "modify_custom_section", "peep_hole_all", "remove_item_all"]
 
 peep_hole = [ ]
-peep_hole_all = ['peep_hole'] # add the others
+peep_hole_all = ['peep_hole', 'f32.add-commutes'] # add the others
+'f32.add-commutes' = []
 # TODO, add here the peep_hole ones based on the type of the rules
 
 code_motion = [ "code_motion_loops", "code_motion_ifs" ]
