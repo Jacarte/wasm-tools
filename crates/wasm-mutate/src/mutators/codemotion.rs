@@ -190,7 +190,9 @@ impl Mutator for CodemotionMutator {
         let mut cp = config.clone();
         // Initialize mutators
         let mutators: Vec<Box<dyn AstMutator>> = vec![
+            #[cfg(feature="code_motion_ifs")]
             Box::new(IfComplementMutator),
+            #[cfg(feature="code_motion_loops")]
             Box::new(LoopUnrollMutator), // Add the other here
         ];
 
