@@ -658,7 +658,7 @@ impl Mutator for PeepholeMutator {
         let mut r = vec![];
         let mut cp = config.clone();
 
-        println!("Getting info for {function_count} functions");
+        log::debug!("Getting info for {function_count} functions");
         let mut pob = 1.0/(sample_ratio as f32);
         //println!("pob {}", pob);
 
@@ -706,7 +706,7 @@ impl Mutator for PeepholeMutator {
                                 continue;
                             }
                             _ => {
-                                println!("{e}");
+                                log::error!("{e}");
                             }
                         }
 
@@ -727,7 +727,7 @@ impl Mutator for PeepholeMutator {
                                     // do nothing, to see expressions
                                     match s {
                                         Err(e) => {
-                                            println!("{e}")
+                                            log::error!("{e}")
                                         }
                                         Ok((or, new)) => {
                                             original=or.display;
