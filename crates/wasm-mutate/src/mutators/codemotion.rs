@@ -190,7 +190,7 @@ impl Mutator for CodemotionMutator {
             Box::new(LoopUnrollMutator), // Add the other here
         ];
 
-        println!("Getting info for {function_count} functions");
+        log::debug!("Getting info for {function_count} functions");
         'functions: for fidx in 0..function_count {
             let reader = readers[fidx as usize];
             let mut operatorreader = reader.get_operators_reader().unwrap();

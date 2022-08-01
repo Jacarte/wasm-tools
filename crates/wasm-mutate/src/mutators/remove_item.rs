@@ -12,6 +12,7 @@ use crate::Error;
 use crate::{ModuleInfo, Result, WasmMutate};
 use rand::Rng;
 use std::collections::HashSet;
+use std::ops::Range;
 use wasm_encoder::*;
 use wasmparser::{
     BinaryReader, CodeSectionReader, DataSectionReader, ElementSectionReader, ExportSectionReader,
@@ -19,6 +20,8 @@ use wasmparser::{
     MemorySectionReader, Operator, SectionReader, TableSectionReader, TagSectionReader,
     TypeSectionReader,
 };
+
+use super::MutationMap;
 
 /// Mutator that removes a random item in a wasm module (function, global,
 /// table, etc).
@@ -30,6 +33,45 @@ impl Mutator for RemoveItemMutator {
         self.0.can_mutate(config)
     }
 
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
+        let mut r = vec![];
+        let mut cp = config.clone();
+        let maxidx = self.0.choose_removal_indexes(&mut cp);
+        
+        
+
+        for idx in maxidx {
+            // Attempt to remove, otherwise is not valid
+            let result = RemoveItem {
+                item: self.0,
+                idx,
+                referenced_functions: HashSet::new(),
+                function_reference_action: Funcref::Save,
+            }
+            .remove(config.info());
+
+            match result {
+                Err(e) => {
+                    log::debug!("Failed {:?}:{} {}", self.0, idx, e)
+                },
+                Ok(_) => {
+
+                    // TODO, validate module ?
+
+                    let mut mm = MutationMap { 
+                        section: SectionId::Code, 
+                        // It is indexed regarding all sections
+                        is_indexed: true, idx: idx as u128, how: format!("Remove {:?}", self.0), 
+                        many: 1, display: Some(format!("{:?}", self.0)), meta: None };
+
+                        r.push(mm);
+                }
+            }
+        
+        }
+       
+        Some(r)
+    }
 
     fn mutate<'a>(
         self,
@@ -100,6 +142,22 @@ impl Item {
             Item::Element => info.num_elements(),
         };
         config.rng().gen_range(0..max)
+    }
+
+
+    fn choose_removal_indexes(&self, config: &mut WasmMutate) -> Range<u32> {
+        let info = config.info();
+        let max = match self {
+            Item::Function => info.num_functions(),
+            Item::Table => info.num_tables(),
+            Item::Memory => info.num_memories(),
+            Item::Global => info.num_globals(),
+            Item::Tag => info.num_tags(),
+            Item::Type => info.num_types(),
+            Item::Data => info.num_data(),
+            Item::Element => info.num_elements(),
+        };
+        Range { start: 0, end: max }
     }
 }
 

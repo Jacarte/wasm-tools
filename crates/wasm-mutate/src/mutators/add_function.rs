@@ -5,7 +5,8 @@ use crate::module::{PrimitiveTypeInfo, TypeInfo};
 use crate::{Result, WasmMutate};
 use rand::Rng;
 use std::convert::TryFrom;
-use wasm_encoder::{Instruction, Module, ValType};
+use wasm_encoder::{Instruction, Module, ValType, SectionId};
+use super::{MutationMap};
 
 /// Mutator that adds new, empty functions to a Wasm module.
 #[derive(Clone, Copy)]
@@ -124,6 +125,17 @@ impl Mutator for AddFunctionMutator {
         };
 
         Ok(Box::new(std::iter::once(Ok(module))))
+    }
+
+
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
+        let mut r = vec![MutationMap { 
+            section: SectionId::Function, // If the function section changes, the code section also changes
+            // It is indexed regarding all sections
+            is_indexed: false, idx:  0, how: "Add a new function".to_string(), 
+            many: 1, display: None, meta: None }];
+    
+        Some(r)
     }
 
     fn can_mutate<'a>(&self, config: &'a WasmMutate) -> bool {

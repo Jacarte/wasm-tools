@@ -1,9 +1,11 @@
 //! A mutator to add a new type to a Wasm module.
 
 use super::Mutator;
-use crate::Result;
+use crate::{Result, WasmMutate};
 use rand::Rng;
+use wasm_encoder::SectionId;
 use std::iter;
+use super::{MutationMap};
 
 /// A mutator that appends a new type to the type section.
 ///
@@ -34,6 +36,16 @@ impl Mutator for AddTypeMutator {
         !config.reduce
     }
 
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
+        let mut r = vec![MutationMap { 
+            section: SectionId::Type, 
+            // It is indexed regarding all sections
+            is_indexed: false, idx: 0, how: "Add a new type".to_string(), 
+            many: 1, display: None, meta: None }];
+    
+        Some(r)
+    }
+    
     fn mutate<'a>(
         self,
         config: &'a mut crate::WasmMutate,
