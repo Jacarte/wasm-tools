@@ -23,167 +23,226 @@ impl PeepholeMutator {
         if config.reduce {
             // NB: these only go one way when we are reducing.
             rules.extend(vec![
+                #[cfg(feature="i32.operator_or_neg1")]
                 rewrite!("i32.or--1"; "(i32.or ?x i32.const.-1)" => "i32.const.-1"),
+                #[cfg(feature="i32.operator_or_neg_one1")]
                 rewrite!("i64.or--1"; "(i64.or ?x i64.const.-1)" => "i64.const.-1"),
+                #[cfg(feature="i32.operator_or_commutative")]
                 rewrite!("i32.or-x-x"; "(i32.or ?x ?x)" => "?x"),
+                #[cfg(feature="i64.operator_or_commutative")]
                 rewrite!("i64.or-x-x"; "(i64.or ?x ?x)" => "?x"),
+                #[cfg(feature="i32.operator_and_commutative")]
                 rewrite!("i32.and-x-x"; "(i32.and ?x ?x)" => "?x"),
+                #[cfg(feature="i64.operator_and_commutative")]
                 rewrite!("i64.and-x-x"; "(i64.and ?x ?x)" => "?x"),
+                #[cfg(feature="select_same_branches")]
                 rewrite!("select-same-branches"; "(select ?y ?y ?x)" => "?y"),
+                #[cfg(feature="i32.sub_zero")]
                 rewrite!("i32.sub-0"; "(i32.sub ?x i32.const.0)" => "?x"),
                 rewrite!("i64.sub-0"; "(i64.sub ?x i64.const.0)" => "?x"),
+                #[cfg(feature="i32.mul_1")]
                 rewrite!("i32.mul-x-1"; "(i32.mul ?x i32.const.1)" => "?x"),
+                #[cfg(feature="i64.mul_1")]
                 rewrite!("i64.mul-x-1"; "(i64.mul ?x i64.const.1)" => "?x"),
+                #[cfg(feature="f32.mul_1")]
                 rewrite!("f32.mul-x-1"; "(f32.mul ?x f32.const.1,0)" => "?x"),
+                #[cfg(feature="f64.mul_1")]
                 rewrite!("f64.mul-x-1"; "(f64.mul ?x f64.const.1,0)" => "?x"),
+                #[cfg(feature="i32.add_0")]
                 rewrite!("i32.add-x-0"; "(i32.add ?x i32.const.0)" => "?x"),
+                #[cfg(feature="i64.add_0")]
                 rewrite!("i64.add-x-0"; "(i64.add ?x i64.const.0)" => "?x"),
+                #[cfg(feature="f32.add_0")]
                 rewrite!("f32-add-x-0"; "(f32.add ?x f32.const.0,0)" => "?x"),
+                #[cfg(feature="f64.add_0")]
                 rewrite!("f64.add-x-0"; "(f64.add ?x f64.const.0,0)" => "?x"),
+                #[cfg(feature="i32.xor_0")]
                 rewrite!("i32.xor-x-0"; "(i32.xor ?x i32.const.0)" => "?x"),
+                #[cfg(feature="i64.xor_0")]
                 rewrite!("i64.xor-x-0"; "(i64.xor ?x i64.const.0)" => "?x"),
+                #[cfg(feature="i32.eq_0")]
                 rewrite!("i32.eq-x-0"; "(i32.eq ?x i32.const.0)" => "(i32.eqz ?x)"),
+                #[cfg(feature="i64.eq_0")]
                 rewrite!("i64.eq-x-0"; "(i64.eq ?x i64.const.0)" => "(i64.eqz ?x)"),
+                #[cfg(feature="i32.shl_by_0")]
                 rewrite!("i32.shl-by-0"; "(i32.shl ?x i32.const.0)" => "?x"),
+                #[cfg(feature="i64.shl_by_0")]
                 rewrite!("i64.shl-by-0"; "(i64.shl ?x i64.const.0)" => "?x"),
+                #[cfg(feature="i32.shr_u_by_0")]
                 rewrite!("i32.shr_u-by-0"; "(i32.shr_u ?x i32.const.0)" => "?x"),
+                #[cfg(feature="i64.shr_u_by_0")]
                 rewrite!("i64.shr_u-by-0"; "(i64.shr_u ?x i64.const.0)" => "?x"),
+                #[cfg(feature="i32.shr_s_by_0")]
                 rewrite!("i32.shr_s-by-0"; "(i32.shr_s ?x i32.const.0)" => "?x"),
+                #[cfg(feature="i64.shr_s_by_0")]
                 rewrite!("i64.shr_s-by-0"; "(i64.shr_s ?x i64.const.0)" => "?x"),
             ]);
         } else {
             rules.extend(vec![
+                #[cfg(feature="i32.operator_or_neg1")]
                 rewrite!("i32.or--1"; "(i32.or ?x i32.const.-1)" => "i32.const.-1"),
+                #[cfg(feature="i64.operator_or_neg1")]
                 rewrite!("i64.or--1"; "(i64.or ?x i64.const.-1)" => "i64.const.-1"),
             ]);
 
-            rules.extend(rewrite!(
+            #[cfg(feature="i32.operator_or_commutative")]
+            rules.extend(
+                
+                rewrite!(
                 "i32.or-x-x";
                 "(i32.or ?x ?x)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             ));
+
+            #[cfg(feature="i64.operator_or_commutative")]
             rules.extend(rewrite!(
                 "i64.or-x-x";
                 "(i64.or ?x ?x)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             ));
 
+            #[cfg(feature="i32.operator_and_commutative")]
             rules.extend(rewrite!(
                 "i32.and-x-x";
                 "(i32.and ?x ?x)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             ));
+
+            #[cfg(feature="i64.operator_and_commutative")]
             rules.extend(rewrite!(
                 "i64.and-x-x";
                 "(i64.and ?x ?x)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             ));
 
+            #[cfg(feature="select_same_branches")]
             rules.push(rewrite!("select-same-branches"; "(select ?y ?y ?x)" => "?y"));
 
+            #[cfg(feature="i32.sub_zero")]
             rules.extend(rewrite!(
                 "i32.sub-0";
                 "(i32.sub ?x i32.const.0)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             ));
+            #[cfg(feature="i64.sub_zero")]
             rules.extend(rewrite!(
                 "i64.sub-0";
                 "(i64.sub ?x i64.const.0)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             ));
 
+            #[cfg(feature="i32.mul_1")]
             rules.extend(rewrite!(
                 "i32.mul-x-1";
                 "?x" <=> "(i32.mul ?x i32.const.1)"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             ));
+
+            #[cfg(feature="i64.mul_1")]
             rules.extend(rewrite!(
                 "i64.mul-x-1";
                 "?x" <=> "(i64.mul ?x i64.const.1)"
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             ));
 
+            #[cfg(feature="f32.mul_1")]
             rules.extend(rewrite!(
                 "f32.mul-x-1";
                 "?x" <=> "(f32.mul ?x f32.const.1,0)"
                     if self.is_type("?x", PrimitiveTypeInfo::F32)
             ));
+
+            #[cfg(feature="f64.mul_1")]
             rules.extend(rewrite!(
                 "f64.mul-x-1";
                 "?x" <=> "(f64.mul ?x f64.const.1,0)"
                     if self.is_type("?x", PrimitiveTypeInfo::F64)
             ));
 
+            #[cfg(feature="i32.add_0")]
             rules.extend(rewrite!(
                 "i32.add-x-0";
                 "?x" <=> "(i32.add ?x i32.const.0)"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             ));
+            
+            #[cfg(feature="i64.add_0")]
             rules.extend(rewrite!(
                 "i64.add-x-0";
                 "?x" <=> "(i64.add ?x i64.const.0)"
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             ));
+            #[cfg(feature="f32.add_0")]
             rules.extend(rewrite!(
                 "f32-add-x-0";
                 "?x" <=> "(f32.add ?x f32.const.0,0)"
                     if self.is_type("?x", PrimitiveTypeInfo::F32)
             ));
+            #[cfg(feature="f64.add_0")]
             rules.extend(rewrite!(
                 "f64.add-x-0";
                 "?x" <=> "(f64.add ?x f64.const.0,0)"
                     if self.is_type("?x", PrimitiveTypeInfo::F64)
             ));
 
+            #[cfg(feature="i32.xor_0")]
             rules.extend(rewrite!(
                 "i32.xor-x-0";
                 "?x" <=> "(i32.xor ?x i32.const.0)"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             ));
+            #[cfg(feature="i64.xor_0")]
             rules.extend(rewrite!(
                 "i64.xor-x-0";
                 "?x" <=> "(i64.xor ?x i64.const.0)"
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             ));
 
+      #[cfg(feature="i32.eq_0")]
             rules.extend(rewrite!(
                 "i32.eq-x-0";
                 "(i32.eq ?x i32.const.0)" <=> "(i32.eqz ?x)"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             ));
+            #[cfg(feature="i64.eq_0")]
             rules.extend(rewrite!(
                 "i64.eq-x-0";
                 "(i64.eq ?x i64.const.0)" <=> "(i64.eqz ?x)"
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             ));
-
+            #[cfg(feature="i32.shl_by_0")]
             rules.extend(rewrite!(
                 "i32.shl-by-0";
                 "(i32.shl ?x i32.const.0)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             ));
+            #[cfg(feature="i64.shl_by_0")]
             rules.extend(rewrite!(
                 "i64.shl-by-0";
                 "(i64.shl ?x i64.const.0)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             ));
-
+            #[cfg(feature="i32.shr_u_by_0")]
             rules.extend(rewrite!(
                 "i32.shr_u-by-0";
                 "(i32.shr_u ?x i32.const.0)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             ));
+            #[cfg(feature="i64.shr_u_by_0")]
             rules.extend(rewrite!(
                 "i64.shr_u-by-0";
                 "(i64.shr_u ?x i64.const.0)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             ));
-
+            
+            #[cfg(feature="i32.shr_s_by_0")]
             rules.extend(rewrite!(
                 "i32.shr_s-by-0";
                 "(i32.shr_s ?x i32.const.0)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             ));
+            
+            #[cfg(feature="i64.shr_s_by_0")]
             rules.extend(rewrite!(
                 "i64.shr_s-by-0";
                 "(i64.shr_s ?x i64.const.0)" <=> "?x"

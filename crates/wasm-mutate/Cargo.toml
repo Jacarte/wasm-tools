@@ -24,9 +24,10 @@ env_logger = "0.9"
 
 [features]
 default = ["all"]
-all = [ "peep_hole", "code_motion", "function_body_unreachable", "modify_data", "modify_init_exprs", "remove_exports", "remove_item", "remove_section", "rename_exports", "snip_function", "add_function", "add_type", "modify_custom_section"]
+all = [ "peep_hole", "code_motion", "function_body_unreachable", "modify_data", "modify_init_exprs", "remove_exports", "remove_section", "rename_exports", "snip_function", "add_function", "add_type", "modify_custom_section", "peep_hole_all", "remove_item_all"]
 
 peep_hole = [ ]
+peep_hole_all = ['peep_hole'] # add the others
 # TODO, add here the peep_hole ones based on the type of the rules
 
 code_motion = [ "code_motion_loops", "code_motion_ifs" ]
@@ -36,7 +37,7 @@ code_motion_loops = []
 add_function = []
 add_type = []
 
-modify_custom_section = ["modify_custom_section_name", "modify_custom_section_data"]
+modify_custom_section = []
 modify_custom_section_name = []
 modify_custom_section_data = []
 
@@ -45,7 +46,8 @@ modify_data = []
 modify_init_exprs = []
 remove_exports = []
 
-remove_item = ["remove_item_function", "remove_item_table", "remove_item_memory", "remove_item_data", "remove_item_element", "remove_item_type", "remove_item_tag", "remove_item_global"]
+remove_item = [] # make them exclusive always 
+remove_item_all = ["remove_item", "remove_item_function", "remove_item_table", "remove_item_memory", "remove_item_data", "remove_item_element", "remove_item_type", "remove_item_tag", "remove_item_global"]
 remove_item_function = []
 remove_item_table = []
 remove_item_memory = []
@@ -55,7 +57,7 @@ remove_item_type = []
 remove_item_data = []
 remove_item_element = []
 
-remove_section = ["remove_section_custom", "remove_section_empty"]
+remove_section = ["remove_section_custom", "remove_section_empty"] # We dont need to exclude here, since we have only two options
 remove_section_custom = []
 remove_section_empty = []
 
