@@ -115,7 +115,7 @@ impl AstMutator for IfComplementMutator {
     }
     
     /// Checks if this mutator can be applied to the passed `ast`
-    fn get_mutation_info<'a>(&self, fidx: u32, config: &'a crate::WasmMutate, ast: &Ast) -> Option<Vec<MutationMap>> {
+    fn get_mutation_info<'a>(&self, fidx: u32, deeplevel: u32, config: &'a crate::WasmMutate, ast: &Ast) -> Option<Vec<MutationMap>> {
 
         let mut results = vec![];
         let ifs = ast.get_ifs();
@@ -136,7 +136,7 @@ impl AstMutator for IfComplementMutator {
                 idx: targetid,
                 how: "Invert If construction".to_string(),
                 many: 1, // This happens only onece
-                display: Some(ast.pretty()),
+                display: { if deeplevel > 2 { Some(ast.pretty()) } else { None } },
                 meta: Some(meta),
             };
 

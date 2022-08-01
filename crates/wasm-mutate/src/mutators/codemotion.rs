@@ -131,7 +131,7 @@ pub trait AstMutator {
 
 
     /// Checks if this mutator can be applied to the passed `ast`
-    fn get_mutation_info<'a>(&self, fidx: u32, config: &'a crate::WasmMutate, ast: &Ast) -> Option<Vec<MutationMap>> {
+    fn get_mutation_info<'a>(&self, fidx: u32,deeplevel: u32, config: &'a crate::WasmMutate, ast: &Ast) -> Option<Vec<MutationMap>> {
         None
     }
 }
@@ -214,7 +214,7 @@ impl Mutator for CodemotionMutator {
 
                     for m in &mutators {
                         
-                        let mut partial = m.get_mutation_info(fidx, config, &ast).unwrap_or(vec![]);
+                        let mut partial = m.get_mutation_info(fidx, deeplevel, config, &ast).unwrap_or(vec![]);
                         r.append(&mut partial);
                     }
 

@@ -146,7 +146,7 @@ peep_hole_all = ['peep_hole', 'i32.operator_or_neg1', 'i32.operator_or_neg_one1'
 
 # TODO, add here the peep_hole ones based on the type of the rules
 
-code_motion = [ "code_motion_loops", "code_motion_ifs" ]
+code_motion = [ ]
 code_motion_ifs = []
 code_motion_loops = []
 
@@ -173,7 +173,7 @@ remove_item_type = []
 remove_item_data = []
 remove_item_element = []
 
-remove_section = ["remove_section_custom", "remove_section_empty"] # We dont need to exclude here, since we have only two options
+remove_section = [] # We dont need to exclude here, since we have only two options
 remove_section_custom = []
 remove_section_empty = []
 

@@ -36,16 +36,16 @@ impl Mutator for CustomSectionMutator {
                 r.push(MutationMap { 
                     section: SectionId::Custom, 
                     // It is indexed regarding all sections
-                    is_indexed: true, idx:  idx as u128, how: "Change the name of the custom section. Infinite ways to do so".to_string(), 
-                    many: -1, display: None, meta: None });
+                    is_indexed: true, idx:  idx as u128, how: "Change the name of the custom section.".to_string(), 
+                    many: 1, display: None, meta: None });
             }
 
             if cfg!(feature="modify_custom_section_data") {
                 r.push(MutationMap { 
                     section: SectionId::Custom, 
                     // It is indexed regarding all sections
-                    is_indexed: true, idx:  idx as u128, how: "Change the data of the custom section. Infinite ways to do so".to_string(), 
-                    many: -1,
+                    is_indexed: true, idx:  idx as u128, how: "Change the data of the custom section.".to_string(), 
+                    many: 1,
                     display: None, meta: None })
             }
         }
@@ -77,7 +77,7 @@ impl Mutator for CustomSectionMutator {
         let mut name = old_custom_section.name();
         let mut data = old_custom_section.data();
 
-        if cfg!(feature="modify_custom_section_name") && config.rng().gen_ratio(1, 20) {
+        if cfg!(feature="modify_custom_section_name") {
             // Mutate the custom section's name.
             let mut new_name = name.to_string().into_bytes();
             config.raw_mutate(
@@ -90,7 +90,8 @@ impl Mutator for CustomSectionMutator {
             )?;
             name_string = String::from_utf8_lossy(&new_name).to_string();
             name = &name_string;
-        } else if cfg!(feature="modify_custom_section_data") {
+        }
+        if cfg!(feature="modify_custom_section_data") {
             // Mutate the custom section's data.
             let mut new_data = data.to_vec();
             config.raw_mutate(

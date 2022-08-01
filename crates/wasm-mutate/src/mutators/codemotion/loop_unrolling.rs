@@ -204,7 +204,7 @@ impl AstMutator for LoopUnrollMutator {
 
 
     /// Checks if this mutator can be applied to the passed `ast`
-    fn get_mutation_info<'a>(&self, fidx: u32, config: &'a crate::WasmMutate, ast: &Ast) -> Option<Vec<MutationMap>> {
+    fn get_mutation_info<'a>(&self, fidx: u32,deeplevel: u32,  config: &'a crate::WasmMutate, ast: &Ast) -> Option<Vec<MutationMap>> {
 
         let mut results = vec![];
         let empty_returning_loops = self.get_empty_returning_loops(ast);
@@ -225,7 +225,7 @@ impl AstMutator for LoopUnrollMutator {
                 idx: targetid,
                 how: "Unrolls a loop".to_string(),
                 many: 1, // This happens only onece
-                display: Some(ast.pretty()),
+                display:  { if deeplevel > 2 { Some(ast.pretty()) } else { None } },
                 meta: Some(meta),
             };
 
