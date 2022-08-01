@@ -30,7 +30,12 @@ pub struct RemoveItemMutator(pub Item);
 
 impl Mutator for RemoveItemMutator {
     fn can_mutate(&self, config: &WasmMutate) -> bool {
-        self.0.can_mutate(config)
+        
+        if cfg!(feature="remove_item") {
+            self.0.can_mutate(config)
+        } else {
+            false
+        }
     }
 
     fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
@@ -113,18 +118,18 @@ impl Item {
         // "no mutations applicable" error later
         let info = config.info();
         match self {
-            Item::Function => info.num_functions() > 0,
-            Item::Table => info.num_tables() > 0,
-            Item::Memory => info.num_memories() > 0,
-            Item::Global => info.num_globals() > 0,
-            Item::Tag => info.num_tags() > 0,
-            Item::Type => info.num_types() > 0,
+            Item::Function => cfg!(feature="remove_item_function") && info.num_functions() > 0,
+            Item::Table => cfg!(feature="remove_item_table") && info.num_tables() > 0,
+            Item::Memory => cfg!(feature="remove_item_memory") && info.num_memories() > 0,
+            Item::Global => cfg!(feature="remove_item_global") && info.num_globals() > 0,
+            Item::Tag => cfg!(feature="remove_item_tag") && info.num_tags() > 0,
+            Item::Type => cfg!(feature="remove_item_type") && info.num_types() > 0,
 
             // Note that data/elements can lead to traps and side-effectful
             // initialization of imported tables/memories, so these are only
             // considered for removal if we're not preserving semantics.
-            Item::Data => !config.preserve_semantics && info.num_data() > 0,
-            Item::Element => !config.preserve_semantics && info.num_elements() > 0,
+            Item::Data => cfg!(feature="remove_item_data") && !config.preserve_semantics && info.num_data() > 0,
+            Item::Element => cfg!(feature="remove_item_element") && !config.preserve_semantics && info.num_elements() > 0,
         }
     }
 

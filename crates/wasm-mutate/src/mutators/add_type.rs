@@ -33,7 +33,13 @@ impl AddTypeMutator {
 
 impl Mutator for AddTypeMutator {
     fn can_mutate(&self, config: &crate::WasmMutate) -> bool {
-        !config.reduce
+        
+        if cfg!(feature="add_function") {
+            !config.reduce
+        } else {
+            false
+        }
+        
     }
 
     fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {

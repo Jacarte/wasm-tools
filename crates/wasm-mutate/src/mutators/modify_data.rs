@@ -67,7 +67,11 @@ impl Mutator for ModifyDataMutator {
     fn can_mutate<'a>(&self, config: &'a WasmMutate) -> bool {
         // Modifying a data segment doesn't preserve the semantics of the
         // original module and also only works if there's actually some data.
-        !config.preserve_semantics && config.info().num_data() > 0
+        if cfg!(feature="modify_data") {
+            !config.preserve_semantics && config.info().num_data() > 0
+        } else {
+            false
+        }
     }
 }
 

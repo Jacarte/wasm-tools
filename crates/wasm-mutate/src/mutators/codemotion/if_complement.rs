@@ -108,6 +108,9 @@ impl AstWriter for IfComplementWriter {
 
 impl AstMutator for IfComplementMutator {
     fn can_mutate<'a>(&self, _: &crate::WasmMutate, ast: &Ast) -> bool {
+        if !cfg!(feature="code_motion_ifs") {
+            return false
+        }
         ast.has_if()
     }
     

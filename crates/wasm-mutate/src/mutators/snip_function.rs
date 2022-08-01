@@ -83,6 +83,11 @@ impl Mutator for SnipMutator {
     }
 
     fn can_mutate<'a>(&self, config: &'a WasmMutate) -> bool {
+
+        if !cfg!(feature="snip_function") { 
+            return false
+        }
+
         !config.preserve_semantics && config.info().has_nonempty_code()
     }
 }

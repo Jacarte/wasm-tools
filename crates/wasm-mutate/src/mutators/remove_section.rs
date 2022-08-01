@@ -39,6 +39,10 @@ fn is_empty_section(section: &wasm_encoder::RawSection) -> bool {
 
 impl Mutator for RemoveSection {
     fn can_mutate(&self, config: &WasmMutate) -> bool {
+
+        if !cfg!(feature="remove_section") { 
+            return false
+        }
         match self {
             &Self::Custom => config.info().has_custom_section(),
             &Self::Empty => config

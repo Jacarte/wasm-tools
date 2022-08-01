@@ -142,7 +142,11 @@ impl Mutator for AddFunctionMutator {
         // Note: adding a new, never-called function preserves semantics so we
         // don't need to gate on whether `config.preserve_semantics` is set or
         // not.
-        !config.reduce && config.info().num_types() > 0
+        if cfg!(feature="add_function") {
+            !config.reduce && config.info().num_types() > 0
+        } else {
+            false
+        }
     }
 }
 

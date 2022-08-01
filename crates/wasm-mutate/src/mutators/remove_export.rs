@@ -57,7 +57,12 @@ impl Mutator for RemoveExportMutator {
     }
 
     fn can_mutate<'a>(&self, config: &'a WasmMutate) -> bool {
-        !config.preserve_semantics && config.info().has_exports() && config.info().exports_count > 0
+        
+        if cfg!(feature="remove_exports") {
+            !config.preserve_semantics && config.info().has_exports() && config.info().exports_count > 0
+        } else {
+            false
+        }
     }
 }
 

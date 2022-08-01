@@ -633,7 +633,11 @@ impl Mutator for PeepholeMutator {
     }
 
     fn can_mutate<'a>(&self, config: &'a WasmMutate) -> bool {
-        config.info().has_code() && config.info().num_local_functions() > 0
+        if cfg!(feature="peep_hole") {
+            config.info().has_code() && config.info().num_local_functions() > 0
+        } else {
+            false
+        }
     }
 
     fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {

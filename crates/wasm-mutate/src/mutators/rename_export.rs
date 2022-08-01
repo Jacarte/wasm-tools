@@ -93,6 +93,11 @@ impl Mutator for RenameExportMutator {
     }
 
     fn can_mutate<'a>(&self, config: &'a WasmMutate) -> bool {
+
+        if !cfg!(feature="rename_exports") { 
+            return false
+        }
+
         !config.preserve_semantics && config.info().has_exports() && config.info().exports_count > 0
     }
 }

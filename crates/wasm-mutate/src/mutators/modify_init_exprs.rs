@@ -232,6 +232,10 @@ impl Mutator for InitExpressionMutator {
     }
 
     fn can_mutate(&self, config: &crate::WasmMutate) -> bool {
+
+        if !cfg!(feature="modify_init_exprs") { 
+            return false
+        }
         // the implementation here can only reduce for now,
         // but could be extended to mutate arbitrarily.
         if !config.reduce {

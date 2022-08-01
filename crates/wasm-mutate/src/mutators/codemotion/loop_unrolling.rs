@@ -195,6 +195,9 @@ impl LoopUnrollMutator {
 
 impl AstMutator for LoopUnrollMutator {
     fn can_mutate<'a>(&self, _config: &crate::WasmMutate, ast: &Ast) -> bool {
+        if !cfg!(feature="code_motion_loops") {
+            return false
+        }
         let empty_returning_loops = self.get_empty_returning_loops(ast);
         !empty_returning_loops.is_empty()
     }

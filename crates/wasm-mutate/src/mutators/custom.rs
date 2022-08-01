@@ -10,7 +10,12 @@ pub struct CustomSectionMutator;
 
 impl Mutator for CustomSectionMutator {
     fn can_mutate(&self, config: &crate::WasmMutate) -> bool {
-        config.info().has_custom_section()
+
+        if cfg!(feature="modify_custom_section") {
+            config.info().has_custom_section()
+        } else {
+            false
+        }
     }
 
     fn get_mutation_info(&self, config: &crate::WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
@@ -27,17 +32,22 @@ impl Mutator for CustomSectionMutator {
             .collect();
 
         for (idx, s) in custom_section_indices {
-            r.push(MutationMap { 
-                section: SectionId::Custom, 
-                // It is indexed regarding all sections
-                is_indexed: true, idx:  idx as u128, how: "Change the name of the custom section. Infinite ways to do so".to_string(), 
-                many: -1, display: None, meta: None });
-            r.push(MutationMap { 
-                section: SectionId::Custom, 
-                // It is indexed regarding all sections
-                is_indexed: true, idx:  idx as u128, how: "Change the data of the custom section. Infinite ways to do so".to_string(), 
-                many: -1,
-                display: None, meta: None })
+            if cfg!(feature="modify_custom_section_name") {
+                r.push(MutationMap { 
+                    section: SectionId::Custom, 
+                    // It is indexed regarding all sections
+                    is_indexed: true, idx:  idx as u128, how: "Change the name of the custom section. Infinite ways to do so".to_string(), 
+                    many: -1, display: None, meta: None });
+            }
+
+            if cfg!(feature="modify_custom_section_data") {
+                r.push(MutationMap { 
+                    section: SectionId::Custom, 
+                    // It is indexed regarding all sections
+                    is_indexed: true, idx:  idx as u128, how: "Change the data of the custom section. Infinite ways to do so".to_string(), 
+                    many: -1,
+                    display: None, meta: None })
+            }
         }
 
         Some(r)
@@ -67,7 +77,7 @@ impl Mutator for CustomSectionMutator {
         let mut name = old_custom_section.name();
         let mut data = old_custom_section.data();
 
-        if config.rng().gen_ratio(1, 20) {
+        if cfg!(feature="modify_custom_section_name") && config.rng().gen_ratio(1, 20) {
             // Mutate the custom section's name.
             let mut new_name = name.to_string().into_bytes();
             config.raw_mutate(
@@ -80,7 +90,7 @@ impl Mutator for CustomSectionMutator {
             )?;
             name_string = String::from_utf8_lossy(&new_name).to_string();
             name = &name_string;
-        } else {
+        } else if cfg!(feature="modify_custom_section_data") {
             // Mutate the custom section's data.
             let mut new_data = data.to_vec();
             config.raw_mutate(
