@@ -34,7 +34,7 @@ impl AddTypeMutator {
 impl Mutator for AddTypeMutator {
     fn can_mutate(&self, config: &crate::WasmMutate) -> bool {
         
-        if cfg!(feature="add_function") {
+        if cfg!(feature="add_type") {
             !config.reduce
         } else {
             false

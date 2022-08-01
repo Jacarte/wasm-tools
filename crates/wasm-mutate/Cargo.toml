@@ -23,7 +23,8 @@ env_logger = "0.9"
 
 
 [features]
-default = ["all"]
+default = ["none"]
+none = []
 all = [ "code_motion", "function_body_unreachable", "modify_data", "modify_init_exprs", "remove_exports", "remove_section", "rename_exports", "snip_function", "add_function", "add_type", "modify_custom_section", "peep_hole_all", "remove_item_all"]
 
 peep_hole = [ ]
