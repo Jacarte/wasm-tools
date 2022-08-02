@@ -772,36 +772,37 @@ impl Mutator for PeepholeMutator {
                             } else {
                                 let mut meta: HashMap<String, String> = HashMap::new();
                                 
-                                for first in ite.skip(2).take(1) {
+                                for (idx, first) in ite.enumerate() {
 
                                     match first {
                                         Err(e) => {
                                             log::error!("{}", e)
                                         },
                                         Ok((_, new)) => {
+                                            // Add only if we have at least one diff tree in the egraph otherwise this is not valid
                                             meta.insert("random_tree".to_string(), format!("{}", new.display));
-                                            meta.insert("random_tree_index".to_string(), format!("{}", 2));
+                                            meta.insert("random_tree_index".to_string(), format!("{}", idx));
+                                            meta.insert("operators_count".to_string(), format!("{}", operatorscount));
+                                            meta.insert("function_index".to_string(), format!("{}", fidx));
+                                            meta.insert("operator_index".to_string(), format!("{}", oidx));
+                                            meta.insert("egraph_eclass_count".to_string(), format!("{}", eg.number_of_classes()));
+                                            meta.insert("egraph_node_count".to_string(), format!("{}", eg.total_number_of_nodes()));
+
+                                            let mutationinfo  = MutationMap{
+                                                section: wasm_encoder::SectionId::Code,
+                                                is_indexed: true,
+                                                idx: targetid,
+                                                how: format!("Replace ({fidx}:{oidx}:{targetid}) with a subtree of the egraph."),
+                                                many: trees_count,
+                                                display: Some(origtree.display), // See how this can be serialized
+                                                meta: Some(meta)
+                                            };
+                                            r.push(mutationinfo);
+                                            break;
                                         }
                                     }
-                                    break;
                                 }
 
-                                meta.insert("operators_count".to_string(), format!("{}", operatorscount));
-                                meta.insert("function_index".to_string(), format!("{}", fidx));
-                                meta.insert("operator_index".to_string(), format!("{}", oidx));
-                                meta.insert("egraph_eclass_count".to_string(), format!("{}", eg.number_of_classes()));
-                                meta.insert("egraph_node_count".to_string(), format!("{}", eg.total_number_of_nodes()));
-
-                                let mutationinfo  = MutationMap{
-                                    section: wasm_encoder::SectionId::Code,
-                                    is_indexed: true,
-                                    idx: targetid,
-                                    how: format!("Replace ({fidx}:{oidx}:{targetid}) with a subtree of the egraph."),
-                                    many: trees_count,
-                                    display: Some(origtree.display), // See how this can be serialized
-                                    meta: Some(meta)
-                                };
-                                r.push(mutationinfo);
                             }
                         }
                     }   
