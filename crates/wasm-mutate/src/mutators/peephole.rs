@@ -770,8 +770,22 @@ impl Mutator for PeepholeMutator {
                                     }
                                 }
                             } else {
-
                                 let mut meta: HashMap<String, String> = HashMap::new();
+                                
+                                for first in ite.skip(2).take(1) {
+
+                                    match first {
+                                        Err(e) => {
+                                            log::error!("{}", e)
+                                        },
+                                        Ok((_, new)) => {
+                                            meta.insert("random_tree".to_string(), format!("{}", new.display));
+                                            meta.insert("random_tree_index".to_string(), format!("{}", 2));
+                                        }
+                                    }
+                                    break;
+                                }
+
                                 meta.insert("operators_count".to_string(), format!("{}", operatorscount));
                                 meta.insert("function_index".to_string(), format!("{}", fidx));
                                 meta.insert("operator_index".to_string(), format!("{}", oidx));
