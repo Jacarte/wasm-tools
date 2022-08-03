@@ -40,7 +40,7 @@ impl Mutator for RemoveItemMutator {
         }
     }
 
-    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> crate::Result<Option<Vec<super::MutationMap>>> {
         let mut r = vec![];
         let mut cp = config.clone();
         let maxidx = self.0.choose_removal_indexes(&mut cp);
@@ -77,7 +77,7 @@ impl Mutator for RemoveItemMutator {
         
         }
        
-        Some(r)
+        Ok(Some(r))
     }
 
     fn mutate<'a>(

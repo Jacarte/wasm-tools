@@ -55,7 +55,7 @@ impl Mutator for RemoveSection {
         }
     }
 
-    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> crate::Result<Option<Vec<super::MutationMap>>> {
         let mut r = vec![];
 
         let removal_candidates = config
@@ -78,7 +78,7 @@ impl Mutator for RemoveSection {
                 many: 1, display: None, meta: None });
         }
 
-        Some(r)
+        Ok(Some(r))
     }
 
     fn mutate<'a>(

@@ -20,7 +20,7 @@ impl Mutator for CustomSectionMutator {
         }
     }
 
-    fn get_mutation_info(&self, config: &crate::WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &crate::WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> crate::Result<Option<Vec<super::MutationMap>>> {
 
         let mut r = vec![];
 
@@ -52,7 +52,7 @@ impl Mutator for CustomSectionMutator {
             }
         }
 
-        Some(r)
+        Ok(Some(r))
     }
 
     fn mutate<'a>(

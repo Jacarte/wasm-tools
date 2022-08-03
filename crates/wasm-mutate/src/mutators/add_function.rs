@@ -130,14 +130,14 @@ impl Mutator for AddFunctionMutator {
     }
 
 
-    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Result<Option<Vec<super::MutationMap>>> {
         let mut r = vec![MutationMap { 
             section: SectionId::Function, // If the function section changes, the code section also changes
             // It is indexed regarding all sections
             is_indexed: false, idx:  0, how: "Add a new function".to_string(), 
             many: 1, display: None, meta: None }];
     
-        Some(r)
+        Ok(Some(r))
     }
 
     fn can_mutate<'a>(&self, config: &'a WasmMutate) -> bool {

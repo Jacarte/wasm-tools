@@ -42,14 +42,14 @@ impl Mutator for AddTypeMutator {
         
     }
 
-    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Result<Option<Vec<super::MutationMap>>> {
         let mut r = vec![MutationMap { 
             section: SectionId::Type, 
             // It is indexed regarding all sections
             is_indexed: false, idx: 0, how: "Add a new type".to_string(), 
             many: 1, display: None, meta: None }];
     
-        Some(r)
+        Ok(Some(r))
     }
     
     fn mutate<'a>(

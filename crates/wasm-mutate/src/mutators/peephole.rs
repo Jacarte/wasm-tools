@@ -629,7 +629,7 @@ impl Mutator for PeepholeMutator {
         }
     }
 
-    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> crate::Result<Option<Vec<super::MutationMap>>> {
         // TODO add method to Peephole
         let rules = match self.rules.clone() {
             Some(rules) => rules,
@@ -641,7 +641,7 @@ impl Mutator for PeepholeMutator {
 
 
         let code_section = config.info().get_code_section();
-        let mut sectionreader = CodeSectionReader::new(code_section.data, 0).unwrap();
+        let mut sectionreader = CodeSectionReader::new(code_section.data, 0)?;
         let function_count = sectionreader.get_count();
 
         let readers = (0..function_count)
@@ -657,11 +657,11 @@ impl Mutator for PeepholeMutator {
 
         for fidx in 0..function_count {
             let reader = readers[fidx as usize];
-            let mut operatorreader = reader.get_operators_reader().unwrap();
+            let mut operatorreader = reader.get_operators_reader()?;
             operatorreader.allow_memarg64(true);
             let operators = operatorreader
                 .into_iter_with_offsets()
-                .collect::<wasmparser::Result<Vec<OperatorAndByteOffset>>>().unwrap();
+                .collect::<wasmparser::Result<Vec<OperatorAndByteOffset>>>()?;
             let operatorscount = operators.len();
 
             if operatorscount < sample_ratio as usize {
@@ -687,7 +687,7 @@ impl Mutator for PeepholeMutator {
                 // EWhen iterating to the next instruction, if time has passed, just interrpt, in this case, panic
                 if stopsignal.load(Ordering::Relaxed) {
                     log::error!("Stopping due to signal");
-                    panic!("peephole:timeout")
+                    return Err(crate::Error::timeout())
                     //return Err(CliError::ThreadTimeout)
                 }
 
@@ -812,7 +812,7 @@ impl Mutator for PeepholeMutator {
 
         }
 
-        Some(r)
+        Ok(Some(r))
     }
 }
 

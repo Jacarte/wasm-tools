@@ -26,6 +26,11 @@ impl Error {
         ErrorKind::OutOfFuel.into()
     }
 
+    /// Timeout error.
+    pub fn timeout() -> Self {
+        ErrorKind::Timeout.into()
+    }
+
     /// Construct an unsupported error.
     pub fn unsupported(msg: impl Into<String>) -> Self {
         ErrorKind::Unsupported(msg.into()).into()
@@ -78,6 +83,10 @@ pub enum ErrorKind {
     /// Another error.
     #[error("{0}")]
     Other(String),
+
+    /// Timeout.
+    #[error("Timeout")]
+    Timeout,
 }
 
 /// A `Result` type that is either `Ok(T)` or `Err(wasm_mutate::Error)`.
