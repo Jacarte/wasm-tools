@@ -429,24 +429,15 @@ impl PeepholeMutator {
         oidx: usize,
         max_trees: usize,
         rules: &[Rewrite<Lang, PeepholeMutationAnalysis>],
+        reader: &FunctionBody,
+        operators: Vec<OperatorAndByteOffset>
     ) -> Result<(EG, TreeInfo, Box<dyn Iterator<Item = Result<(TreeInfo, TreeInfo)>> + 'a>)> {
-        let code_section = config.info().get_code_section();
-        let mut sectionreader = CodeSectionReader::new(code_section.data, 0)?;
-        let function_count = sectionreader.get_count();
-        let mut function_to_mutate = fidx;
+        let function_to_mutate = fidx;
 
-        let readers = (0..function_count)
-            .map(|_| sectionreader.read().unwrap())
-            .collect::<Vec<_>>();
-
-        let reader = readers[function_to_mutate as usize];
         let mut operatorreader = reader.get_operators_reader()?;
         operatorreader.allow_memarg64(true);
         let mut localsreader = reader.get_locals_reader()?;
-        let operators = operatorreader
-            .into_iter_with_offsets()
-            .collect::<wasmparser::Result<Vec<OperatorAndByteOffset>>>()?;
-
+        
         let mut opcode_to_mutate = oidx; // Replace by read from map fidx
         log::trace!(
             "Selecting operator {} from function {}",
@@ -479,13 +470,13 @@ impl PeepholeMutator {
         let minidfg = match minidfg {
             None => {
                 log::trace!("DFG cannot be constructed for opcode {}", opcode_to_mutate);
-                return Err(Error::no_mutations_applicable());;
+                return Err(Error::no_mutations_applicable());
             }
             Some(minidfg) => minidfg,
         };
 
         if !minidfg.map.contains_key(&opcode_to_mutate) {
-            return Err(Error::no_mutations_applicable());;
+            return Err(Error::no_mutations_applicable());
         }
 
         // Create an eterm expression from the basic block starting at oidx
@@ -514,9 +505,7 @@ impl PeepholeMutator {
         // In theory this will return the Id of the operator eterm
         let root = egraph.add_expr(&start);
         let startcmp = start.clone();
-        // Since this construction is expensive then more fuel is consumed
-        let config4fuel = config.clone();
-
+        
         // If the number of nodes in the egraph is not large, then
         // continue the search
         if egraph.total_number_of_nodes() <= 1 {
@@ -666,7 +655,7 @@ impl Mutator for PeepholeMutator {
         let mut pob = 1.0/(sample_ratio as f32);
         //println!("pob {}", pob);
 
-        'functions: for fidx in 0..function_count {
+        for fidx in 0..function_count {
             let reader = readers[fidx as usize];
             let mut operatorreader = reader.get_operators_reader().unwrap();
             operatorreader.allow_memarg64(true);
@@ -700,7 +689,7 @@ impl Mutator for PeepholeMutator {
                 }
 
                 let selfcp = self.clone();
-                let infos = selfcp.get_mutation_info_for_instruction(&mut cp, fidx, oidx, 1000, &rules );
+                let infos = selfcp.get_mutation_info_for_instruction(&mut cp, fidx, oidx, 1000, &rules, &reader, operators.clone() );
                 match infos {
                     Err(e) => {
                         match e.kind() {
