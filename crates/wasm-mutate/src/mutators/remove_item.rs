@@ -14,7 +14,7 @@ use rand::Rng;
 use std::collections::HashSet;
 use std::ops::Range;
 use std::sync::Arc;
-use std::sync::atomic::AtomicBool;
+use std::sync::atomic::{AtomicBool, Ordering};
 use wasm_encoder::*;
 use wasmparser::{
     BinaryReader, CodeSectionReader, DataSectionReader, ElementSectionReader, ExportSectionReader,
@@ -72,6 +72,12 @@ impl Mutator for RemoveItemMutator {
                         many: 1, display: Some(format!("{:?}", self.0)), meta: None };
 
                         r.push(mm);
+
+                    if stopsignal.load(Ordering::Relaxed) {
+                        log::error!("Stopping due to signal");
+                        // pass the already calculated maps, the caller should know what to odo with it
+                        return Err(crate::Error::timeout(r.clone()))
+                    }
                 }
             }
         
