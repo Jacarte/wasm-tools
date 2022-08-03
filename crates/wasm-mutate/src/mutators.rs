@@ -48,7 +48,7 @@ use wasm_encoder::{Module, CodeSection, SectionId};
 use wasmparser::Operator;
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MutationMap {
     /// Code section where the target is located
     pub section: SectionId,

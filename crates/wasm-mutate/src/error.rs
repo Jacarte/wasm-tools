@@ -1,3 +1,5 @@
+use crate::mutators::MutationMap;
+
 /// An error encountered when choosing or applying a Wasm mutation.
 #[derive(thiserror::Error, Debug)]
 #[error(transparent)]
@@ -27,8 +29,8 @@ impl Error {
     }
 
     /// Timeout error.
-    pub fn timeout() -> Self {
-        ErrorKind::Timeout.into()
+    pub fn timeout(maps: Vec<MutationMap>) -> Self {
+        ErrorKind::Timeout(maps).into()
     }
 
     /// Construct an unsupported error.
@@ -86,7 +88,7 @@ pub enum ErrorKind {
 
     /// Timeout.
     #[error("Timeout")]
-    Timeout,
+    Timeout(Vec<MutationMap>),
 }
 
 /// A `Result` type that is either `Ok(T)` or `Err(wasm_mutate::Error)`.

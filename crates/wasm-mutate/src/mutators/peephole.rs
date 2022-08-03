@@ -687,7 +687,8 @@ impl Mutator for PeepholeMutator {
                 // EWhen iterating to the next instruction, if time has passed, just interrpt, in this case, panic
                 if stopsignal.load(Ordering::Relaxed) {
                     log::error!("Stopping due to signal");
-                    return Err(crate::Error::timeout())
+                    // pass the already calculated maps, the caller should know what to odo with it
+                    return Err(crate::Error::timeout(r.clone()))
                     //return Err(CliError::ThreadTimeout)
                 }
 
