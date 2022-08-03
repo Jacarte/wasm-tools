@@ -39,7 +39,7 @@ use crate::{
     Error, ModuleInfo, Result, WasmMutate, ErrorKind, mutators::{peephole::eggsy::expr_enumerator::lazy_expand_aux_sequential, MutationMap},
 };
 use egg::{Rewrite, Runner, RecExpr, Language};
-use rand::{prelude::SmallRng, Rng, SeedableRng};
+use rand::{prelude::SmallRng, Rng, SeedableRng, seq::IteratorRandom};
 use std::{ops::Range, collections::HashMap, hash::Hash, cmp::max, sync::{Arc, atomic::{AtomicBool, Ordering}}};
 use std::{borrow::Cow, fmt::Debug};
 use wasm_encoder::{CodeSection, Function, GlobalSection, Instruction, Module, ValType};
@@ -652,7 +652,6 @@ impl Mutator for PeepholeMutator {
         let mut cp = config.clone();
 
         log::debug!("Getting info for {function_count} functions");
-        let mut pob = 1.0/(sample_ratio as f32);
         //println!("pob {}", pob);
 
         for fidx in 0..function_count {
@@ -664,24 +663,16 @@ impl Mutator for PeepholeMutator {
                 .collect::<wasmparser::Result<Vec<OperatorAndByteOffset>>>()?;
             let operatorscount = operators.len();
 
-            if operatorscount < sample_ratio as usize {
-                // Select at least the 1% of the operators
-                pob = 1.0/(operatorscount as f32);
-                //println!("pob {}", pob);
-            } else {
-                pob = 1.0/(sample_ratio as f32);
-                //println!("pob {}", pob);
-            }
+
+            let mut pob = (operatorscount as f32/sample_ratio as f32).ceil();
+
 
             let mut count = 0;
             let mut gen = SmallRng::seed_from_u64(seed);
+            let selected_indexes = (0..operatorscount).choose_multiple(&mut gen, pob as usize);
 
-            for oidx in 0..operatorscount {
-                let (newpob, _) = gen.gen::<(f32, bool)>();
+            for oidx in selected_indexes {
 
-                if newpob > pob {
-                    continue;
-                }
                 count += 1;
 
                 // EWhen iterating to the next instruction, if time has passed, just interrpt, in this case, panic

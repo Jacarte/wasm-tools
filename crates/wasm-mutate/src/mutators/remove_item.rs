@@ -10,7 +10,9 @@
 use crate::mutators::{translate, Item, Mutator, Translator};
 use crate::Error;
 use crate::{ModuleInfo, Result, WasmMutate};
-use rand::Rng;
+use rand::seq::IteratorRandom;
+use rand::{Rng, SeedableRng};
+use rand::rngs::SmallRng;
 use std::collections::HashSet;
 use std::ops::Range;
 use std::sync::Arc;
@@ -45,9 +47,12 @@ impl Mutator for RemoveItemMutator {
         let mut cp = config.clone();
         let maxidx = self.0.choose_removal_indexes(&mut cp);
         
-        
+        let mut pob = (maxidx.len() as f32/sample_ratio as f32).ceil();
 
-        for idx in maxidx {
+        let mut gen = SmallRng::seed_from_u64(seed);
+        let selected_indexes = maxidx.choose_multiple(&mut gen, pob as usize);
+
+        for idx in selected_indexes {
             // Attempt to remove, otherwise is not valid
             let result = RemoveItem {
                 item: self.0,
