@@ -5,6 +5,8 @@ use crate::module::{PrimitiveTypeInfo, TypeInfo};
 use crate::{Result, WasmMutate};
 use rand::Rng;
 use std::convert::TryFrom;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 use wasm_encoder::{Instruction, Module, ValType, SectionId};
 use super::{MutationMap};
 
@@ -128,7 +130,7 @@ impl Mutator for AddFunctionMutator {
     }
 
 
-    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Option<Vec<super::MutationMap>> {
         let mut r = vec![MutationMap { 
             section: SectionId::Function, // If the function section changes, the code section also changes
             // It is indexed regarding all sections

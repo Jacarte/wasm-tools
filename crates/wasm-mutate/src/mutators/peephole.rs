@@ -40,7 +40,7 @@ use crate::{
 };
 use egg::{Rewrite, Runner, RecExpr, Language};
 use rand::{prelude::SmallRng, Rng, SeedableRng};
-use std::{ops::Range, collections::HashMap, hash::Hash, cmp::max};
+use std::{ops::Range, collections::HashMap, hash::Hash, cmp::max, sync::{Arc, atomic::{AtomicBool, Ordering}}};
 use std::{borrow::Cow, fmt::Debug};
 use wasm_encoder::{CodeSection, Function, GlobalSection, Instruction, Module, ValType};
 use wasmparser::{CodeSectionReader, FunctionBody, GlobalSectionReader, LocalsReader};
@@ -629,7 +629,7 @@ impl Mutator for PeepholeMutator {
         }
     }
 
-    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Option<Vec<super::MutationMap>> {
         // TODO add method to Peephole
         let rules = match self.rules.clone() {
             Some(rules) => rules,
@@ -683,6 +683,13 @@ impl Mutator for PeepholeMutator {
                     continue;
                 }
                 count += 1;
+
+                // EWhen iterating to the next instruction, if time has passed, just interrpt, in this case, panic
+                if stopsignal.load(Ordering::Relaxed) {
+                    log::error!("Stopping due to signal");
+                    panic!("peephole:timeout")
+                    //return Err(CliError::ThreadTimeout)
+                }
 
                 if count % 10 == 0{
                     //print!("\r{}/{}({:.2}%)                                            ", count, operatorscount as u32,  100.0*count as f32/(operatorscount as f32))

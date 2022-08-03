@@ -4,7 +4,7 @@ use super::Mutator;
 use crate::{Result, WasmMutate};
 use rand::Rng;
 use wasm_encoder::SectionId;
-use std::iter;
+use std::{iter, sync::{Arc, atomic::AtomicBool}};
 use super::{MutationMap};
 
 /// A mutator that appends a new type to the type section.
@@ -42,7 +42,7 @@ impl Mutator for AddTypeMutator {
         
     }
 
-    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Option<Vec<super::MutationMap>> {
         let mut r = vec![MutationMap { 
             section: SectionId::Type, 
             // It is indexed regarding all sections

@@ -1,6 +1,8 @@
 //! Mutate custom sections.
 #![allow(missing_docs)]
 
+use std::sync::{Arc, atomic::AtomicBool};
+
 use super::{Mutator, MutationMap};
 use rand::{seq::SliceRandom, Rng};
 use wasm_encoder::{CodeSection, SectionId};
@@ -18,7 +20,7 @@ impl Mutator for CustomSectionMutator {
         }
     }
 
-    fn get_mutation_info(&self, config: &crate::WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &crate::WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Option<Vec<super::MutationMap>> {
 
         let mut r = vec![];
 

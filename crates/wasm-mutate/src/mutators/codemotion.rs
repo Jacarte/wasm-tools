@@ -19,6 +19,8 @@ pub mod if_complement;
 pub mod ir;
 pub mod loop_unrolling;
 
+use std::sync::{Arc, atomic::AtomicBool};
+
 use self::ir::parse_context::Ast;
 use super::{Mutator, MutationMap};
 use crate::{
@@ -177,7 +179,7 @@ impl Mutator for CodemotionMutator {
         }
     }
 
-    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Option<Vec<super::MutationMap>> {
         let code_section = config.info().get_code_section();
         let mut sectionreader = CodeSectionReader::new(code_section.data, 0).unwrap();
         let function_count = sectionreader.get_count();

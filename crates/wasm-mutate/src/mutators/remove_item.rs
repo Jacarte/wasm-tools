@@ -13,6 +13,8 @@ use crate::{ModuleInfo, Result, WasmMutate};
 use rand::Rng;
 use std::collections::HashSet;
 use std::ops::Range;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 use wasm_encoder::*;
 use wasmparser::{
     BinaryReader, CodeSectionReader, DataSectionReader, ElementSectionReader, ExportSectionReader,
@@ -38,7 +40,7 @@ impl Mutator for RemoveItemMutator {
         }
     }
 
-    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Option<Vec<super::MutationMap>> {
         let mut r = vec![];
         let mut cp = config.clone();
         let maxidx = self.0.choose_removal_indexes(&mut cp);

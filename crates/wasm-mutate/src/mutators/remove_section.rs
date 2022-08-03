@@ -1,5 +1,7 @@
 //! Mutators related to custom sections.
 
+use std::sync::{Arc, atomic::AtomicBool};
+
 use super::{Mutator, MutationMap};
 use crate::{Result, WasmMutate};
 use rand::seq::SliceRandom;
@@ -53,7 +55,7 @@ impl Mutator for RemoveSection {
         }
     }
 
-    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32) -> Option<Vec<super::MutationMap>> {
+    fn get_mutation_info(&self, config: &WasmMutate, deeplevel: u32, seed: u64, sample_ratio: u32, stopsignal: Arc<AtomicBool>) -> Option<Vec<super::MutationMap>> {
         let mut r = vec![];
 
         let removal_candidates = config
