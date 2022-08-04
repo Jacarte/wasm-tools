@@ -671,6 +671,7 @@ impl Mutator for PeepholeMutator {
             let mut gen = SmallRng::seed_from_u64(seed);
             let selected_indexes = (0..operatorscount).choose_multiple(&mut gen, pob as usize);
 
+            log::debug!("Randomly selecting {}/{} operators for {}", selected_indexes.len(), operatorscount, fidx);
             for oidx in selected_indexes {
 
                 count += 1;
