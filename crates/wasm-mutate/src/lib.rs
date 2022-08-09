@@ -8,6 +8,8 @@
 //! fuzzing.
 #![allow(missing_docs)]
 #![cfg_attr(not(feature = "clap"), deny(missing_docs))]
+#[macro_use]
+
 
 mod error;
 mod info;
@@ -49,8 +51,8 @@ macro_rules! define_mutators {
                 log::debug!("attempting to mutate with `{}`", m.name());
                 match m.clone().mutate($self) {
                     Ok(iter) => {
-                        //log::debug!("mutator `{}` succeeded", m.name());
-                        println!("mutator `{}` succeeded", m.name());
+                        log::debug!("mutator `{}` succeeded", m.name());
+                        probe!("mutator `{}` succeeded", m.name());
                         return Ok(Box::new(iter.into_iter().map(|r| r.map(|m| m.finish()))))
                     }
                     Err(e) => {
@@ -67,6 +69,7 @@ macro_rules! define_mutators {
                 log::trace!("Can `{}` mutate? {}", m.name(), can_mutate);
                 if can_mutate {
                     log::debug!("attempting to mutate with `{}`", m.name());
+                    probe!("attempting to mutate with `{}`", m.name());
                     match m.clone().mutate($self) {
                         Ok(iter) => {
                             probe!("mutator `{}` succeeded", m.name());
@@ -187,6 +190,11 @@ pub struct WasmMutate<'wasm> {
     #[cfg_attr(feature = "clap", clap(long))]
     reduce: bool,
 
+
+    /// Peephole tree size
+    #[cfg_attr(feature = "clap", clap(long))]
+    peephole_size: u32,
+
     // Note: this is only exposed via the programmatic interface, not via the
     // CLI.
     #[cfg_attr(feature = "clap", clap(skip = None))]
@@ -213,6 +221,7 @@ impl Default for WasmMutate<'_> {
             reduce: false,
             raw_mutate_func: None,
             fuel: Cell::new(u64::MAX),
+            peephole_size:1,
             rng: None,
             info: None,
         }
@@ -233,6 +242,13 @@ impl<'wasm> WasmMutate<'wasm> {
     /// transformations on the Wasm module.
     pub fn preserve_semantics(&mut self, preserve_semantics: bool) -> &mut Self {
         self.preserve_semantics = preserve_semantics;
+        self
+    }
+
+
+    /// Set peephole size
+    pub fn peephole_size(&mut self, peephole_size: u32) -> &mut Self {
+        self.peephole_size = peephole_size;
         self
     }
 
@@ -298,7 +314,7 @@ impl<'wasm> WasmMutate<'wasm> {
         define_mutators!(
             self,
             (
-                PeepholeMutator::new(2),
+                PeepholeMutator::new(self.peephole_size),
                 RemoveExportMutator,
                 RenameExportMutator { max_name_size: 100 },
                 SnipMutator,

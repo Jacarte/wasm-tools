@@ -44,7 +44,7 @@ use std::{ops::Range, collections::HashMap, hash::Hash, cmp::max, sync::{Arc, at
 use std::{borrow::Cow, fmt::Debug};
 use wasm_encoder::{CodeSection, Function, GlobalSection, Instruction, Module, ValType};
 use wasmparser::{CodeSectionReader, FunctionBody, GlobalSectionReader, LocalsReader};
-
+use crate::{probe, send_signal_to_probes_socket};
 /// This mutator applies a random peephole transformation to the input Wasm module
 #[derive(Clone)]
 pub struct PeepholeMutator {
@@ -147,7 +147,6 @@ impl PeepholeMutator {
                 .into_iter_with_offsets()
                 .collect::<wasmparser::Result<Vec<OperatorAndByteOffset>>>()?;
             let operatorscount = operators.len();
-
             let mut opcode_to_mutate = config.rng().gen_range(0..operatorscount); // Replace by read from map fidx
             log::trace!(
                 "Selecting operator {}/{} from function {}",
@@ -272,6 +271,11 @@ impl PeepholeMutator {
                 let iterator = iter
                     .filter(move |expr| !expr.to_string().eq(&startcmp.to_string()))
                     .map(move |expr| {
+                        probe!("Mutating function {}/{}", function_to_mutate, function_count);
+                        probe!("Mutating opcode {}/{}", opcode_to_mutate, operatorscount);
+                        probe!("Original expression {}", start.pretty(60));
+                        probe!("New expression {}", expr.pretty(60));
+
                         log::trace!("Yielding expression:\n{}", expr.pretty(60));
 
                         let mut newfunc = self.copy_locals(reader)?;
