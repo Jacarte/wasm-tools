@@ -6,6 +6,7 @@ use rand::Rng;
 use wasm_encoder::SectionId;
 use std::{iter, sync::{Arc, atomic::AtomicBool}};
 use super::{MutationMap};
+use crate::{probe, send_signal_to_probes_socket};
 
 /// A mutator that appends a new type to the type section.
 ///
@@ -91,7 +92,8 @@ impl Mutator for AddTypeMutator {
                 }
             }
             // And then add our new type.
-            types.function(params, results);
+            types.function(params.clone(), results.clone());
+            probe!("Added type params:{:?} results: {:?}", params, results);
             let types_section_index = config.info().types.unwrap();
             Ok(Box::new(iter::once(Ok(config
                 .info()

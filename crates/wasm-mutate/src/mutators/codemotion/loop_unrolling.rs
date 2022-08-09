@@ -1,6 +1,7 @@
 //! This mutator selects a random `loop` construction in a function and tries to unroll it.
 //! This mutator only works on empty-returning loops
 use std::{collections::HashMap, slice::Iter, iter::empty};
+use crate::{probe, send_signal_to_probes_socket};
 
 use rand::prelude::SliceRandom;
 use wasm_encoder::{Function, Instruction, ValType};
@@ -162,6 +163,7 @@ impl AstWriter for LoopUnrollWriter {
     ) -> crate::Result<()> {
         if self.loop_to_mutate == nodeidx {
             self.unroll_loop(ast, nodeidx, newfunc, operators, input_wasm)?;
+            probe!("Unroll loop {}/{}", self.loop_to_mutate, ast.get_loops().len());
         } else {
             self.write_loop_default(ast, nodeidx, body, newfunc, operators, input_wasm, ty)?;
         }

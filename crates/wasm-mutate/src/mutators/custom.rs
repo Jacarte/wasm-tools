@@ -6,6 +6,7 @@ use std::sync::{Arc, atomic::AtomicBool};
 use super::{Mutator, MutationMap};
 use rand::{seq::SliceRandom, Rng};
 use wasm_encoder::{CodeSection, SectionId};
+use crate::{probe, send_signal_to_probes_socket};
 
 #[derive(Clone, Copy)]
 pub struct CustomSectionMutator;

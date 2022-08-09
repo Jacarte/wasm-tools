@@ -3,6 +3,7 @@
 //! before the mutated if structure is encoded, a "negation" of the previous operand
 //! in the stack is written. The "negation" is encoded with a `i32.eqz` operator.
 use std::collections::HashMap;
+use crate::{probe, send_signal_to_probes_socket};
 
 use rand::prelude::SliceRandom;
 use wasm_encoder::{Function, Instruction, ValType};
@@ -90,6 +91,8 @@ impl AstWriter for IfComplementWriter {
                 input_wasm,
                 ty,
             )?;
+
+            probe!("Write if complement {}/{}", self.if_to_mutate, ast.get_ifs().len());
         } else {
             self.write_if_else_default(
                 ast,

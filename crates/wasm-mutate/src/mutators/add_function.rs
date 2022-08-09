@@ -9,6 +9,7 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use wasm_encoder::{Instruction, Module, ValType, SectionId};
 use super::{MutationMap};
+use crate::{probe, send_signal_to_probes_socket};
 
 /// Mutator that adds new, empty functions to a Wasm module.
 #[derive(Clone, Copy)]
@@ -104,6 +105,7 @@ impl Mutator for AddFunctionMutator {
                     if !added_func && sec_id >= wasm_encoder::SectionId::Function as u8 {
                         module.section(&func_sec_enc);
                         added_func = true;
+                        probe!("Added func");
                     }
 
                     if !added_code
@@ -112,6 +114,7 @@ impl Mutator for AddFunctionMutator {
                     {
                         module.section(&code_sec_enc);
                         added_code = true;
+                        probe!("Added code");
                     }
 
                     sec_id == wasm_encoder::SectionId::Function as u8
