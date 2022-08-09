@@ -39,6 +39,7 @@ impl PeepholeMutator {
                 rewrite!("select-same-branches"; "(select ?y ?y ?x)" => "?y"),
                 #[cfg(feature="i32.sub_zero")]
                 rewrite!("i32.sub-0"; "(i32.sub ?x i32.const.0)" => "?x"),
+                #[cfg(feature="i64.sub_zero")]
                 rewrite!("i64.sub-0"; "(i64.sub ?x i64.const.0)" => "?x"),
                 #[cfg(feature="i32.mul_1")]
                 rewrite!("i32.mul-x-1"; "(i32.mul ?x i32.const.1)" => "?x"),
