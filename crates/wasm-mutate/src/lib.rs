@@ -27,7 +27,7 @@ use crate::mutators::{
 use info::ModuleInfo;
 use mutators::Mutator;
 use rand::{rngs::SmallRng, Rng, SeedableRng};
-use std::{cell::Cell, sync::Arc};
+use std::{cell::Cell, sync::Arc, path::Path, os::unix::net::UnixStream, io::Write};
 
 #[cfg(feature = "clap")]
 use clap::Parser;
@@ -49,7 +49,8 @@ macro_rules! define_mutators {
                 log::debug!("attempting to mutate with `{}`", m.name());
                 match m.clone().mutate($self) {
                     Ok(iter) => {
-                        log::debug!("mutator `{}` succeeded", m.name());
+                        //log::debug!("mutator `{}` succeeded", m.name());
+                        println!("mutator `{}` succeeded", m.name());
                         return Ok(Box::new(iter.into_iter().map(|r| r.map(|m| m.finish()))))
                     }
                     Err(e) => {
@@ -68,6 +69,7 @@ macro_rules! define_mutators {
                     log::debug!("attempting to mutate with `{}`", m.name());
                     match m.clone().mutate($self) {
                         Ok(iter) => {
+                            probe!("mutator `{}` succeeded", m.name());
                             log::debug!("mutator `{}` succeeded", m.name());
                             return Ok(Box::new(iter.into_iter().map(|r| r.map(|m| m.finish()))))
                         }
@@ -407,4 +409,39 @@ pub(crate) fn validate(bytes: &[u8]) {
     }
 
     panic!("wasm failed to validate: {} (written to test.wasm)", err);
+}
+
+
+/// TODO
+pub static SOCKET_PATH: &'static str = "probes.sock";
+
+#[macro_export]
+/// TODO
+macro_rules! probe {
+    ($format: literal $(, $arg: expr) *) => {
+        send_signal_to_probes_socket(format!($format $(,$arg)*))
+    }
+}
+
+/// TODO
+pub fn send_signal_to_probes_socket(signal: String) {
+    let socket = Path::new(SOCKET_PATH);
+
+    // Connect to socket
+    let mut stream = match UnixStream::connect(&socket) {
+        Err(_) => {
+            log::error!("server is not running");
+            return
+        },
+        Ok(stream) => stream,
+    };
+
+    // Send message
+    match stream.write(&signal.as_bytes()) {
+        Err(_) => {
+            log::error!("couldn't send message");
+            return
+        }
+        Ok(_) => {}
+    }
 }
