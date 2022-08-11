@@ -49,6 +49,7 @@ macro_rules! define_mutators {
             log::trace!("Can `{}` mutate? {}", m.name(), can_mutate);
             if can_mutate {
                 log::debug!("attempting to mutate with `{}`", m.name());
+                probe!("attempting to mutate with `{}`", m.name());
                 match m.clone().mutate($self) {
                     Ok(iter) => {
                         log::debug!("mutator `{}` succeeded", m.name());

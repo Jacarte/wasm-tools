@@ -92,7 +92,7 @@ impl AstWriter for IfComplementWriter {
                 ty,
             )?;
 
-            probe!("Write if complement {}/{}", self.if_to_mutate, ast.get_ifs().len());
+            probe!("Write if complement {}/{}", self.if_to_mutate, ast.get_nodes().len());
         } else {
             self.write_if_else_default(
                 ast,

@@ -163,7 +163,7 @@ impl AstWriter for LoopUnrollWriter {
     ) -> crate::Result<()> {
         if self.loop_to_mutate == nodeidx {
             self.unroll_loop(ast, nodeidx, newfunc, operators, input_wasm)?;
-            probe!("Unroll loop {}/{}", self.loop_to_mutate, ast.get_loops().len());
+            probe!("Unroll loop {}/{}", self.loop_to_mutate, ast.get_nodes().len());
         } else {
             self.write_loop_default(ast, nodeidx, body, newfunc, operators, input_wasm, ty)?;
         }
