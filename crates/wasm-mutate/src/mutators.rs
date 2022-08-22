@@ -44,7 +44,7 @@ use std::{borrow::Cow, collections::HashMap, sync::{atomic::AtomicBool, Arc}};
 
 use super::Result;
 use crate::WasmMutate;
-use wasm_encoder::{Module, CodeSection, SectionId};
+use wasm_encoder::{Module, SectionId};
 use wasmparser::Operator;
 
 
