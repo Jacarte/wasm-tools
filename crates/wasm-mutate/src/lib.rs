@@ -8,6 +8,7 @@
 //! fuzzing.
 #![allow(missing_docs)]
 #![cfg_attr(not(feature = "clap"), deny(missing_docs))]
+#![feature(stmt_expr_attributes)]
 #[macro_use]
 
 
