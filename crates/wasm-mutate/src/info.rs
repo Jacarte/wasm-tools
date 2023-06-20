@@ -156,10 +156,10 @@ impl<'a> ModuleInfo<'a> {
                 }
                 Payload::MemorySection(reader) => {
                     info.memories = Some(info.raw_sections.len());
+                    let mut idx = info.memory_count;
                     info.memory_count += reader.count();
                     info.section(SectionId::Memory.into(), reader.range(), input_wasm);
 
-                    let mut idx = 0;
                     for ty in reader {
                         let t = ty?;
                         info.memory_types.push(t.clone());
