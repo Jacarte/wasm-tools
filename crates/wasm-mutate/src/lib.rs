@@ -213,10 +213,13 @@ impl<'wasm> WasmMutate<'wasm> {
             &PeepholeMutator::new(5),
             #[cfg(feature = "peephole-large")]
             &PeepholeMutator::new(50),
+            #[cfg(not(feature = "no-static"))]
             &RemoveExportMutator,
             &RenameExportMutator { max_name_size: 100 },
+            #[cfg(not(feature = "no-static"))]
             &SnipMutator,
             &CodemotionMutator,
+            #[cfg(not(feature = "no-static"))]
             &FunctionBodyUnreachable,
             #[cfg(not(feature = "no-custom-section"))]
             &AddCustomSectionMutator,
@@ -224,10 +227,12 @@ impl<'wasm> WasmMutate<'wasm> {
             &ReorderCustomSectionMutator,
             #[cfg(not(feature = "no-custom-section"))]
             &CustomSectionMutator,
+            #[cfg(not(feature = "no-static"))]
             &AddTypeMutator {
                 max_params: 20,
                 max_results: 20,
             },
+            #[cfg(not(feature = "no-static"))]
             &AddFunctionMutator,
             #[cfg(not(feature = "no-custom-section"))]
             &RemoveSection::Custom,
@@ -237,13 +242,21 @@ impl<'wasm> WasmMutate<'wasm> {
             &ConstExpressionMutator::ElementOffset,
             &ConstExpressionMutator::ElementFunc,
             &RemoveItemMutator(Item::Function),
+            #[cfg(not(feature = "no-static"))]
             &RemoveItemMutator(Item::Global),
+            #[cfg(not(feature = "no-static"))]
             &RemoveItemMutator(Item::Memory),
+            #[cfg(not(feature = "no-static"))]
             &RemoveItemMutator(Item::Table),
+            #[cfg(not(feature = "no-static"))]
             &RemoveItemMutator(Item::Type),
+            #[cfg(not(feature = "no-static"))]
             &RemoveItemMutator(Item::Data),
+            #[cfg(not(feature = "no-static"))]
             &RemoveItemMutator(Item::Element),
+            #[cfg(not(feature = "no-static"))]
             &RemoveItemMutator(Item::Tag),
+            #[cfg(not(feature = "no-static"))]
             &ModifyDataMutator {
                 max_data_size: 10 << 20, // 10MB
             },

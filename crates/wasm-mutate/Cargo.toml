@@ -26,6 +26,8 @@ env_logger = { workspace = true }
 default = ["peephole-small"]
 # If enabled, symetric transformations wont be applied. E.g., loop unrolling
 asymmetric = []
+# If true, disables static transformations
+no-static = []
 # If enabled, custom sections wont be transformed
 no-custom-section = []
 # If enabled, the peephole mutation depth is 50
@@ -37,4 +39,4 @@ peephole-small = []
 # Experimental transformation for random access to memory
 random-access = []
 # If enabled, only transformation leading to runtime behavior will be applied
-runtime-only = [ "asymmetric", "no-custom-section", "random-access"]
+runtime-only = [ "asymmetric", "no-custom-section", "random-access", "no-static"]
