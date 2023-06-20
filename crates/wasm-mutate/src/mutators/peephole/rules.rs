@@ -686,7 +686,7 @@ impl PeepholeMutator {
 
     /// Condition that check for number of module memories greater than 0
     fn at_least_one_memory(&self, config: &WasmMutate) -> Condition {
-        let count = config.info().num_memories();
+        let count = config.info().num_i32_memories();
         Condition::Bool(count > 0)
     }
 

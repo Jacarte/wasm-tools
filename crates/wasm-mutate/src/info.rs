@@ -35,6 +35,7 @@ pub struct ModuleInfo<'a> {
     data_segments_count: u32,
     start_function: Option<u32>,
     memory_count: u32,
+    memory_i32_count: u32,
     table_count: u32,
     tag_count: u32,
 
@@ -117,6 +118,9 @@ impl<'a> ModuleInfo<'a> {
                                 info.memory_count += 1;
                                 info.imported_memories_count += 1;
                                 info.memory_types.push(ty);
+                                if !(ty).memory64 {
+                                    info.memory_i32_count += 1;
+                                }
                             }
                             wasmparser::TypeRef::Table(ty) => {
                                 info.table_count += 1;
@@ -155,7 +159,12 @@ impl<'a> ModuleInfo<'a> {
                     info.section(SectionId::Memory.into(), reader.range(), input_wasm);
 
                     for ty in reader {
-                        info.memory_types.push(ty?);
+                        let t = ty?;
+                        info.memory_types.push(t.clone());
+                        
+                        if !(t).memory64 {
+                            info.memory_i32_count += 1;
+                        }
                     }
                 }
                 Payload::GlobalSection(reader) => {
@@ -398,6 +407,11 @@ impl<'a> ModuleInfo<'a> {
     pub fn num_memories(&self) -> u32 {
         self.memory_count
     }
+
+    pub fn num_i32_memories(&self) -> u32 {
+        self.memory_i32_count
+    }
+
 
     pub fn num_imported_memories(&self) -> u32 {
         self.imported_memories_count
