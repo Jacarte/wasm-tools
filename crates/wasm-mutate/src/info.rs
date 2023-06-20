@@ -163,7 +163,7 @@ impl<'a> ModuleInfo<'a> {
                     for ty in reader {
                         let t = ty?;
                         info.memory_types.push(t.clone());
-                        
+
                         if !(t).memory64 && !(t).shared {
                             info.memory_i32.push(idx);
                         }
@@ -414,7 +414,6 @@ impl<'a> ModuleInfo<'a> {
     pub fn i32_memories(&self) -> Vec<u32> {
         self.memory_i32.clone()
     }
-
 
     pub fn num_imported_memories(&self) -> u32 {
         self.imported_memories_count

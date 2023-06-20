@@ -99,7 +99,7 @@ impl PeepholeMutator {
                 "(i32.and ?x ?x)" => "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             );
-            
+
             #[cfg(not(feature = "asymmetric"))]
             rewrite!(
                 "i64.and-x-x";
@@ -111,7 +111,6 @@ impl PeepholeMutator {
                 "(i64.and ?x ?x)" => "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             );
-
 
             rewrite!("select-same-branches"; "(select ?y ?y ?x)" => "?y");
 
@@ -328,10 +327,9 @@ impl PeepholeMutator {
 
         // Convert `x + x` into `x * 2`.
         if !config.reduce {
-
             #[cfg(not(feature = "asymmetric"))]
             rewrite!("i32.add-x-x"; "(i32.add ?x ?x)" <=> "(i32.mul ?x i32.const.2)");
-            
+
             rewrite!("i32.add-x-x.1"; "(i32.add ?x ?x)" => "(i32.mul ?x i32.const.2)");
 
             #[cfg(not(feature = "asymmetric"))]
@@ -372,7 +370,8 @@ impl PeepholeMutator {
             rewrite!("container-x-drop-i32.rand"; "?x" => "(container ?x (drop i32.rand))");
             rewrite!("container-x-drop-i64.rand"; "?x" => "(container ?x (drop i64.rand))");
 
-            #[cfg(feature="random-access")]{
+            #[cfg(feature = "random-access")]
+            {
                 // Insert some stack neutral sub-expresssions as memory accesses
                 rewrite!("i32-rand-access";  "?x" => "(container ?x  (drop (i32.load.0.0.0 i32.small_rand)))"
                     if self.at_least_one_memory(config)
@@ -386,7 +385,7 @@ impl PeepholeMutator {
                 rewrite!("f64-rand-access";  "?x" => "(container ?x (drop (f64.load.0.0.0 i32.small_rand)))"
                     if self.at_least_one_memory(config)
                 );
-                
+
                 rewrite!("i32.load8_s-rand-access";  "?x" => "(container ?x (drop (i32.load8_s.0.0.0 i32.small_rand)))"
                     if self.at_least_one_memory(config)
                 );
@@ -434,9 +433,8 @@ impl PeepholeMutator {
         }
 
         if !config.reduce {
-            #[cfg(feature="random-access")]{
-
-            }
+            #[cfg(feature = "random-access")]
+            {}
         }
 
         // Unfolding constants.

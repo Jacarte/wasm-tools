@@ -879,11 +879,11 @@ mod tests {
         );
     }
 
-
     #[test]
     fn test_random_access() {
-        let rules: &[Rewrite<super::Lang, PeepholeMutationAnalysis>] =
-            &[rewrite!("i32-rand-access";  "?x" => "(container (drop (i32.load.0.0.0 i32.small_rand)) ?x)")];
+        let rules: &[Rewrite<super::Lang, PeepholeMutationAnalysis>] = &[
+            rewrite!("i32-rand-access";  "?x" => "(container (drop (i32.load.0.0.0 i32.small_rand)) ?x)"),
+        ];
 
         test_peephole_mutator(
             r#"
@@ -918,7 +918,6 @@ mod tests {
             0,
         );
     }
-
 
     #[test]
     fn test_peep_integrtion() {
