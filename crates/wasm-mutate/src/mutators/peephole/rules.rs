@@ -371,6 +371,21 @@ impl PeepholeMutator {
             rewrite!("container-drop-i64.rand-x"; "?x" => "(container (drop i64.rand) ?x)");
             rewrite!("container-x-drop-i32.rand"; "?x" => "(container ?x (drop i32.rand))");
             rewrite!("container-x-drop-i64.rand"; "?x" => "(container ?x (drop i64.rand))");
+
+            #[cfg(feature="random-access")]{
+                // Insert some stack neutral sub-expresssions as memory accesses
+                rewrite!("i32-rand-access";  "?x" => "(container (drop (i32.load.0.0.0 i32.small_rand)) ?x)")
+                rewrite!("i64-rand-access";  "?x" => "(container (drop (i64.load.0.0.0 i32.small_rand)) ?x)")
+                rewrite!("f32-rand-access";  "?x" => "(container (drop (f32.load.0.0.0 i32.small_rand)) ?x)")
+                rewrite!("f64-rand-access";  "?x" => "(container (drop (f64.load.0.0.0 i32.small_rand)) ?x)")
+                
+                rewrite!("i32.load8_s-rand-access";  "?x" => "(container (drop (i32.load8_s.0.0.0 i32.small_rand)) ?x)")
+                rewrite!("i32.load8_u-rand-access";  "?x" => "(container (drop (i32.load8_u.0.0.0 i32.small_rand)) ?x)")
+                rewrite!("i32.load16_s-rand-access";  "?x" => "(container (drop (i32.load16_s.0.0.0 i32.small_rand)) ?x)")
+                rewrite!("i32.load16_u-rand-access";  "?x" => "(container (drop (i32.load16_u.0.0.0 i32.small_rand)) ?x)")
+
+                // TODO Some read and store (like the custom global)
+            }
         }
 
         // Spill expressions to a new global and then use the global's value.
@@ -400,6 +415,12 @@ impl PeepholeMutator {
                     if self.is_type("?x", PrimitiveTypeInfo::F64)
                     if self.global_count_less_than(config, max_globals)
             );
+        }
+
+        if !config.reduce {
+            #[cfg(feature="random-access")]{
+
+            }
         }
 
         // Unfolding constants.

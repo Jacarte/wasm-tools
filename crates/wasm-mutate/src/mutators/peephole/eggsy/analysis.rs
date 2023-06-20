@@ -119,6 +119,7 @@ impl PeepholeMutationAnalysis {
             Lang::Drop(_) => Ok(PrimitiveTypeInfo::Empty),
             Lang::I32Load { .. } => Ok(PrimitiveTypeInfo::I32),
             Lang::I64Load { .. } => Ok(PrimitiveTypeInfo::I64),
+            Lang::SmallRandI32 => Ok(PrimitiveTypeInfo::I32),
             Lang::RandI32 => Ok(PrimitiveTypeInfo::I32),
             Lang::RandI64 => Ok(PrimitiveTypeInfo::I64),
             Lang::RandF32 => Ok(PrimitiveTypeInfo::F32),

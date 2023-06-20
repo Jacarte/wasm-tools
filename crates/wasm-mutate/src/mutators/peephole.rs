@@ -879,6 +879,47 @@ mod tests {
         );
     }
 
+
+    #[test]
+    fn test_random_access() {
+        let rules: &[Rewrite<super::Lang, PeepholeMutationAnalysis>] =
+            &[rewrite!("i32-rand-access";  "?x" => "(container (drop (i32.load.0.0.0 i32.small_rand)) ?x)")];
+
+        test_peephole_mutator(
+            r#"
+        (module
+            (func (export "exported_func") (result i32) (local i32 i32)
+                i32.const 42
+                i32.const 1
+                i32.gt_s
+            )
+            (memory (;0;) 0)
+            (export "\00" (memory 0))
+        )
+        "#,
+            rules,
+            r#"
+            (module
+                (type (;0;) (func (result i32)))
+                (func (;0;) (type 0) (result i32)
+                    (local i32 i32)    
+                    i32.const 42    
+                    i32.const 16777216
+                    i32.load align=1    
+                    drop
+                    i32.const 1
+                    i32.gt_s  
+                )
+                (memory (;0;) 0)
+                (export "exported_func" (func 0))
+                (export "\00" (memory 0))
+            )
+            "#,
+            0,
+        );
+    }
+
+
     #[test]
     fn test_peep_integrtion() {
         let rules: &[Rewrite<super::Lang, PeepholeMutationAnalysis>] =
@@ -1588,7 +1629,7 @@ mod tests {
         seed: u64,
     ) {
         let mut config = WasmMutate::default();
-        config.fuel(300);
+        config.fuel(1000);
         config.seed(seed);
 
         let mutator = PeepholeMutator::new_with_rules(3, rules.to_vec());

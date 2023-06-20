@@ -932,6 +932,9 @@ lang! {
         /// This operation represents a random f64
         RandF64 = "f64.rand",
 
+        /// Small and positive random i32 integer, meant to be used for random mem access
+        SmallRandI32 = "i32.small_rand",
+
         /// This instructions is used to define unknown operands, for example
         /// when the value can come from the join of several basic blocks in a
         /// dfg
