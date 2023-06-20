@@ -117,7 +117,7 @@ pub fn expr2wasm(
                     Lang::I64Load32U(memarg, _) => insn(Instruction::I64Load32U(memarg.into())),
                     Lang::I64Load32S(memarg, _) => insn(Instruction::I64Load32S(memarg.into())),
                     Lang::SmallRandI32 => insn(Instruction::I32Const(
-                        config.rng().gen::<i32>().max(0).min(4095), /* 1 page for now */
+                        config.rng().gen::<i32>().max(0).min(4096*4096), /* 1 page for now */
                     )),
                     Lang::RandI32 => insn(Instruction::I32Const(config.rng().gen())),
                     Lang::RandI64 => insn(Instruction::I64Const(config.rng().gen())),
