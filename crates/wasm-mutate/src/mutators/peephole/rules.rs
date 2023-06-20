@@ -374,29 +374,29 @@ impl PeepholeMutator {
 
             #[cfg(feature="random-access")]{
                 // Insert some stack neutral sub-expresssions as memory accesses
-                rewrite!("i32-rand-access";  "?x" => "(container (drop (i32.load.0.0.0 i32.small_rand)) ?x)"
+                rewrite!("i32-rand-access";  "?x" => "(container ?x  (drop (i32.load.0.0.0 i32.small_rand)))"
                     if self.at_least_one_memory(config)
                 );
-                rewrite!("i64-rand-access";  "?x" => "(container (drop (i64.load.0.0.0 i32.small_rand)) ?x)"
+                rewrite!("i64-rand-access";  "?x" => "(container ?x (drop (i64.load.0.0.0 i32.small_rand)))"
                     if self.at_least_one_memory(config)
                 );
-                rewrite!("f32-rand-access";  "?x" => "(container (drop (f32.load.0.0.0 i32.small_rand)) ?x)"
+                rewrite!("f32-rand-access";  "?x" => "(container ?x (drop (f32.load.0.0.0 i32.small_rand)))"
                     if self.at_least_one_memory(config)
                 );
-                rewrite!("f64-rand-access";  "?x" => "(container (drop (f64.load.0.0.0 i32.small_rand)) ?x)"
+                rewrite!("f64-rand-access";  "?x" => "(container ?x (drop (f64.load.0.0.0 i32.small_rand)))"
                     if self.at_least_one_memory(config)
                 );
                 
-                rewrite!("i32.load8_s-rand-access";  "?x" => "(container (drop (i32.load8_s.0.0.0 i32.small_rand)) ?x)"
+                rewrite!("i32.load8_s-rand-access";  "?x" => "(container ?x (drop (i32.load8_s.0.0.0 i32.small_rand)))"
                     if self.at_least_one_memory(config)
                 );
-                rewrite!("i32.load8_u-rand-access";  "?x" => "(container (drop (i32.load8_u.0.0.0 i32.small_rand)) ?x)"
+                rewrite!("i32.load8_u-rand-access";  "?x" => "(container ?x (drop (i32.load8_u.0.0.0 i32.small_rand)))"
                     if self.at_least_one_memory(config)
                 );
-                rewrite!("i32.load16_s-rand-access";  "?x" => "(container (drop (i32.load16_s.0.0.0 i32.small_rand)) ?x)"
+                rewrite!("i32.load16_s-rand-access";  "?x" => "(container ?x (drop (i32.load16_s.0.0.0 i32.small_rand)))"
                     if self.at_least_one_memory(config)
                 );
-                rewrite!("i32.load16_u-rand-access";  "?x" => "(container (drop (i32.load16_u.0.0.0 i32.small_rand)) ?x)"
+                rewrite!("i32.load16_u-rand-access";  "?x" => "(container ?x (drop (i32.load16_u.0.0.0 i32.small_rand)))"
                     if self.at_least_one_memory(config)
                 );
 
