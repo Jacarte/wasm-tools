@@ -207,21 +207,31 @@ impl<'wasm> WasmMutate<'wasm> {
         self.setup(input_wasm)?;
 
         const MUTATORS: &[&dyn Mutator] = &[
+            #[cfg(feature = "peephole-small")]
             &PeepholeMutator::new(2),
+            #[cfg(feature = "peephole-medium")]
+            &PeepholeMutator::new(5),
+            #[cfg(feature = "peephole-large")]
+            &PeepholeMutator::new(50),
             &RemoveExportMutator,
             &RenameExportMutator { max_name_size: 100 },
             &SnipMutator,
             &CodemotionMutator,
             &FunctionBodyUnreachable,
+            #[cfg(not(feature = "no-custom-section"))]
             &AddCustomSectionMutator,
+            #[cfg(not(feature = "no-custom-section"))]
             &ReorderCustomSectionMutator,
+            #[cfg(not(feature = "no-custom-section"))]
             &CustomSectionMutator,
             &AddTypeMutator {
                 max_params: 20,
                 max_results: 20,
             },
             &AddFunctionMutator,
+            #[cfg(not(feature = "no-custom-section"))]
             &RemoveSection::Custom,
+            #[cfg(not(feature = "no-custom-section"))]
             &RemoveSection::Empty,
             &ConstExpressionMutator::Global,
             &ConstExpressionMutator::ElementOffset,

@@ -20,3 +20,21 @@ anyhow = { workspace = true }
 wat = { path = "../wat" }
 wasmprinter = { path = "../wasmprinter" }
 env_logger = { workspace = true }
+
+
+[features]
+default = ["peephole-small"]
+# If enabled, symetric transformations wont be applied. E.g., loop unrolling
+asymmetric = []
+# If enabled, custom sections wont be transformed
+no-custom-section = []
+# If enabled, the peephole mutation depth is 50
+peephole-large = []
+# If enabled, the peephole mutation depth is 5
+peephole-medium = []
+# If enabled, the peephole mutation depth is 2 (the default one)
+peephole-small = []
+# Experimental transformation for random access to memory
+random-access = []
+# If enabled, only transformation leading to runtime behavior will be applied
+runtime-only = [ "asymmetric", "no-custom-section", "random-access"]

@@ -137,6 +137,7 @@ impl Mutator for CodemotionMutator {
         // Initialize mutators
         let mutators: Vec<Box<dyn AstMutator>> = vec![
             Box::new(IfComplementMutator),
+            #[cfg(not(feature = "asymmetric"))]
             Box::new(LoopUnrollMutator), // Add the other here
         ];
 

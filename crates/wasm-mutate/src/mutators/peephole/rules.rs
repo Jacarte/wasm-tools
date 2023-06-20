@@ -64,27 +64,54 @@ impl PeepholeMutator {
             rewrite!("i32.or--1"; "(i32.or ?x i32.const.-1)" => "i32.const.-1");
             rewrite!("i64.or--1"; "(i64.or ?x i64.const.-1)" => "i64.const.-1");
 
+            #[cfg(not(feature = "asymmetric"))]
             rewrite!(
                 "i32.or-x-x";
                 "(i32.or ?x ?x)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             );
             rewrite!(
+                "i32.or-x-x";
+                "(i32.or ?x ?x)" => "?x"
+                    if self.is_type("?x", PrimitiveTypeInfo::I32)
+            );
+
+            #[cfg(not(feature = "asymmetric"))]
+            rewrite!(
                 "i64.or-x-x";
                 "(i64.or ?x ?x)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             );
+            rewrite!(
+                "i64.or-x-x";
+                "(i64.or ?x ?x)" => "?x"
+                    if self.is_type("?x", PrimitiveTypeInfo::I64)
+            );
 
+            #[cfg(not(feature = "asymmetric"))]
             rewrite!(
                 "i32.and-x-x";
                 "(i32.and ?x ?x)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             );
             rewrite!(
+                "i32.and-x-x";
+                "(i32.and ?x ?x)" => "?x"
+                    if self.is_type("?x", PrimitiveTypeInfo::I32)
+            );
+            
+            #[cfg(not(feature = "asymmetric"))]
+            rewrite!(
                 "i64.and-x-x";
                 "(i64.and ?x ?x)" <=> "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             );
+            rewrite!(
+                "i64.and-x-x";
+                "(i64.and ?x ?x)" => "?x"
+                    if self.is_type("?x", PrimitiveTypeInfo::I64)
+            );
+
 
             rewrite!("select-same-branches"; "(select ?y ?y ?x)" => "?y");
 
@@ -301,8 +328,15 @@ impl PeepholeMutator {
 
         // Convert `x + x` into `x * 2`.
         if !config.reduce {
+
+            #[cfg(not(feature = "asymmetric"))]
             rewrite!("i32.add-x-x"; "(i32.add ?x ?x)" <=> "(i32.mul ?x i32.const.2)");
+            
+            rewrite!("i32.add-x-x"; "(i32.add ?x ?x)" => "(i32.mul ?x i32.const.2)");
+
+            #[cfg(not(feature = "asymmetric"))]
             rewrite!("i64.add-x-x"; "(i64.add ?x ?x)" <=> "(i64.mul ?x i64.const.2)");
+            rewrite!("i64.add-x-x"; "(i64.add ?x ?x)" => "(i64.mul ?x i64.const.2)");
         }
 
         // Mess with dropped subexpressions.
