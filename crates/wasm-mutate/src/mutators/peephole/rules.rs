@@ -71,7 +71,7 @@ impl PeepholeMutator {
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             );
             rewrite!(
-                "i32.or-x-x";
+                "i32.or-x-x.1";
                 "(i32.or ?x ?x)" => "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             );
@@ -83,7 +83,7 @@ impl PeepholeMutator {
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             );
             rewrite!(
-                "i64.or-x-x";
+                "i64.or-x-x.1";
                 "(i64.or ?x ?x)" => "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             );
@@ -95,7 +95,7 @@ impl PeepholeMutator {
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             );
             rewrite!(
-                "i32.and-x-x";
+                "i32.and-x-x.1";
                 "(i32.and ?x ?x)" => "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I32)
             );
@@ -107,7 +107,7 @@ impl PeepholeMutator {
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             );
             rewrite!(
-                "i64.and-x-x";
+                "i64.and-x-x.1";
                 "(i64.and ?x ?x)" => "?x"
                     if self.is_type("?x", PrimitiveTypeInfo::I64)
             );
@@ -332,11 +332,11 @@ impl PeepholeMutator {
             #[cfg(not(feature = "asymmetric"))]
             rewrite!("i32.add-x-x"; "(i32.add ?x ?x)" <=> "(i32.mul ?x i32.const.2)");
             
-            rewrite!("i32.add-x-x"; "(i32.add ?x ?x)" => "(i32.mul ?x i32.const.2)");
+            rewrite!("i32.add-x-x.1"; "(i32.add ?x ?x)" => "(i32.mul ?x i32.const.2)");
 
             #[cfg(not(feature = "asymmetric"))]
             rewrite!("i64.add-x-x"; "(i64.add ?x ?x)" <=> "(i64.mul ?x i64.const.2)");
-            rewrite!("i64.add-x-x"; "(i64.add ?x ?x)" => "(i64.mul ?x i64.const.2)");
+            rewrite!("i64.add-x-x.1"; "(i64.add ?x ?x)" => "(i64.mul ?x i64.const.2)");
         }
 
         // Mess with dropped subexpressions.
