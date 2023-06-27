@@ -400,6 +400,50 @@ impl PeepholeMutator {
                 );
 
                 // TODO Some read and store (like the custom global)
+
+                if !config.preserve_semantics {
+                    rewrite!("i32-rand-store";  "?x" => "(container (i32.store.0.0.0 ?x i32.small_rand) ?x)"
+                        if self.at_least_one_memory(config)
+                        if self.is_type("?x", PrimitiveTypeInfo::I32)
+                    );
+                    rewrite!("i64-rand-store";  "?x" => "(container (i64.store.0.0.0 ?x i32.small_rand) ?x)"
+                        if self.at_least_one_memory(config)
+                        if self.is_type("?x", PrimitiveTypeInfo::I64)
+                    );
+                    rewrite!("f32-rand-store";  "?x" => "(container (f32.store.0.0.0 ?x i32.small_rand) ?x)"
+                        if self.at_least_one_memory(config)
+                        if self.is_type("?x", PrimitiveTypeInfo::F32)
+                    );
+                    rewrite!("f64-rand-store";  "?x" => "(container (f64.store.0.0.0 ?x i32.small_rand) ?x)"
+                        if self.at_least_one_memory(config)
+                        if self.is_type("?x", PrimitiveTypeInfo::F64)
+                    );
+
+
+                    rewrite!("i32_8-rand-store";  "?x" => "(container (i32.store8.0.0.0 ?x i32.small_rand) ?x)"
+                        if self.at_least_one_memory(config)
+                        if self.is_type("?x", PrimitiveTypeInfo::I32)
+                    );
+
+                    rewrite!("i32+16-rand-store";  "?x" => "(container (i32.store16.0.0.0 ?x i32.small_rand) ?x)"
+                        if self.at_least_one_memory(config)
+                        if self.is_type("?x", PrimitiveTypeInfo::I32)
+                    );
+
+
+                    rewrite!("i64_8-rand-store";  "?x" => "(container (i64.store8.0.0.0 ?x i32.small_rand) ?x)"
+                        if self.at_least_one_memory(config)
+                        if self.is_type("?x", PrimitiveTypeInfo::I64)
+                    );
+                    rewrite!("i64_16-rand-store";  "?x" => "(container (i64.store16.0.0.0 ?x i32.small_rand) ?x)"
+                        if self.at_least_one_memory(config)
+                        if self.is_type("?x", PrimitiveTypeInfo::I64)
+                    );
+                    rewrite!("i64_32-rand-store";  "?x" => "(container (i64.store32.0.0.0 ?x i32.small_rand) ?x)"
+                        if self.at_least_one_memory(config)
+                        if self.is_type("?x", PrimitiveTypeInfo::I64)
+                    );
+                }
             }
         }
 
