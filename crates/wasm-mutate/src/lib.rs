@@ -230,7 +230,11 @@ impl<'wasm> WasmMutate<'wasm> {
             #[cfg(not(feature = "no-static"))]
             &AddTypeMutator {
                 max_params: 20,
+                
+                #[cfg(not(feature = "only-1-features"))]
                 max_results: 20,
+                #[cfg(feature = "only-1-features")]
+                max_results: 1
             },
             #[cfg(not(feature = "no-static"))]
             &AddFunctionMutator,
