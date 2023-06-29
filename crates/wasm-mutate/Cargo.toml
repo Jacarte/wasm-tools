@@ -24,6 +24,8 @@ env_logger = { workspace = true }
 
 [features]
 default = ["peephole-small"]
+# If enabled, only Wasm 1.0 features will be used
+only-1-features = []
 # If enabled, symetric transformations wont be applied. E.g., loop unrolling
 asymmetric = []
 # If true, disables static transformations

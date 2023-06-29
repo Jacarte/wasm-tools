@@ -22,8 +22,11 @@ impl AddTypeMutator {
             1 => wasm_encoder::ValType::I64,
             2 => wasm_encoder::ValType::F32,
             3 => wasm_encoder::ValType::F64,
+            #[cfg(not(feature = "only-1-features"))]
             4 => wasm_encoder::ValType::V128,
+            #[cfg(not(feature = "only-1-features"))]
             5 => wasm_encoder::ValType::EXTERNREF,
+            #[cfg(not(feature = "only-1-features"))]
             6 => wasm_encoder::ValType::FUNCREF,
             _ => unreachable!(),
         }
