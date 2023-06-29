@@ -17,7 +17,8 @@ pub struct AddTypeMutator {
 
 impl AddTypeMutator {
     fn random_valtype(&self, rng: &mut impl Rng) -> wasm_encoder::ValType {
-        match rng.gen_range(0..=6) {
+        let max = if cfg!(feature = "only-1-features") { 3 } else { 6 };
+        match rng.gen_range(0..=max) {
             0 => wasm_encoder::ValType::I32,
             1 => wasm_encoder::ValType::I64,
             2 => wasm_encoder::ValType::F32,
