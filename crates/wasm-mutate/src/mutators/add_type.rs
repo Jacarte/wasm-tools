@@ -50,7 +50,9 @@ impl Mutator for AddTypeMutator {
         }
 
         let count = config.rng().gen_range(0..=self.max_results);
+        
         let mut results = Vec::with_capacity(count);
+
         for _ in 0..count {
             results.push(self.random_valtype(config.rng()));
         }

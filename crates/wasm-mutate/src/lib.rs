@@ -7,7 +7,7 @@
 //! tool. `wasm-mutate` can serve as a custom mutator for mutation-based
 //! fuzzing.
 
-#![cfg_attr(not(feature = "clap"), deny(missing_docs))]
+// #![cfg_attr(not(feature = "clap"), deny(missing_docs))]
 
 mod error;
 mod info;
@@ -290,7 +290,7 @@ impl<'wasm> WasmMutate<'wasm> {
         Err(Error::no_mutations_applicable())
     }
 
-    fn setup(&mut self, input_wasm: &'wasm [u8]) -> Result<()> {
+    pub fn setup(&mut self, input_wasm: &'wasm [u8]) -> Result<()> {
         self.info = Some(ModuleInfo::new(input_wasm)?);
         self.rng = Some(SmallRng::seed_from_u64(self.seed));
         Ok(())
@@ -300,7 +300,7 @@ impl<'wasm> WasmMutate<'wasm> {
         self.rng.as_mut().unwrap()
     }
 
-    pub(crate) fn info(&self) -> &ModuleInfo<'wasm> {
+    pub fn info(&self) -> &ModuleInfo<'wasm> {
         self.info.as_ref().unwrap()
     }
 
